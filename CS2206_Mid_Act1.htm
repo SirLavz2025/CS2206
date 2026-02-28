@@ -1,0 +1,138 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 2206 - DBMS Lab Activity</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #3b82f6; --success: #22c55e; --text: #f8fafc; --accent: #fbbf24; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { max-width: 800px; margin: auto; flex: 1; width: 100%; }
+        
+        .univ-header { background: #1e40af; padding: 25px; border-radius: 12px; margin-bottom: 20px; text-align: center; border-bottom: 5px solid var(--accent); }
+        .univ-header h1 { margin: 0; font-size: 1.6rem; letter-spacing: 1px; }
+        .univ-header h2 { margin: 5px 0 0; font-size: 1.1rem; font-weight: 400; color: #bfdbfe; }
+        .badge { background: var(--accent); color: #000; display: inline-block; padding: 3px 12px; border-radius: 4px; font-weight: bold; margin-top: 10px; font-size: 0.85rem; }
+
+        .lab-card { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid #334155; margin-bottom: 15px; }
+        .progress-bar { height: 8px; background: #334155; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+        #p-fill { height: 100%; background: var(--success); width: 10%; transition: 0.5s; }
+
+        .editor-box { background: #000; padding: 25px; border-radius: 10px; font-family: 'Consolas', monospace; font-size: 15px; line-height: 1.8; border: 1px solid #334155; position: relative; margin-bottom: 20px; }
+        .slot { display: inline-block; min-width: 150px; border-bottom: 2px dashed var(--primary); color: var(--accent); padding: 0 5px; cursor: pointer; text-align: center; }
+        .slot:empty::before { content: " [SELECT BLOCK] "; opacity: 0.3; font-size: 12px; }
+
+        .blocks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .block-item { background: #334155; border: 1px solid var(--primary); padding: 15px; border-radius: 8px; font-size: 14px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .block-item:active { background: var(--primary); transform: scale(0.98); }
+
+        .terminal { background: #020617; color: #4ade80; padding: 15px; border-radius: 8px; display: none; margin-top: 15px; border-left: 4px solid var(--success); font-family: monospace; font-size: 13px; }
+        .btn-action { width: 100%; background: var(--success); color: #052e16; border: none; padding: 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; display: none; }
+
+        #cert-view { display: none; text-align: center; background: white; color: #1e293b; padding: 50px; border: 15px solid #1e40af; position: relative; font-family: 'Georgia', serif; }
+        .cert-name { font-size: 40px; color: #1e40af; border-bottom: 2px solid #94a3b8; display: inline-block; margin: 20px 0; padding: 0 50px; font-style: italic; }
+
+        footer { text-align: center; padding: 30px; color: #64748b; font-size: 0.85rem; border-top: 1px solid #334155; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-lab">
+    <header class="univ-header">
+        <h1>LAGUNA UNIVERSITY</h1>
+        <h2>College of Computing Studies</h2>
+        <div class="badge">CS 2206 - Database Management System</div>
+    </header>
+
+    <div class="lab-card">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+            <span id="lvl-count">Step 1 of 10</span>
+            <span id="lvl-name" style="color: var(--accent);">Initialize Procedure</span>
+        </div>
+        <div class="progress-bar"><div id="p-fill"></div></div>
+        <p id="lvl-desc" style="margin-top: 15px; color: #94a3b8;"></p>
+    </div>
+
+    <div class="editor-box" id="editor"></div>
+    <div class="blocks-grid" id="options-box"></div>
+
+    <div id="term" class="terminal"></div>
+    <button id="nextBtn" class="btn-action" onclick="handleNext()">COMMIT CODE & CONTINUE →</button>
+
+    <footer>@ SirLavz2026 | RONALD T. LAVA, MSIT | CCS | LU</footer>
+</div>
+
+<div id="cert-view">
+    <h2 style="color:#1e40af;">LAGUNA UNIVERSITY</h2>
+    <p>College of Computing Studies</p>
+    <div style="margin: 40px 0;">This certifies that</div>
+    <div class="cert-name" id="user-name">Student Name</div>
+    <h1 style="font-size: 2.5rem;">STORED PROCEDURES MASTER</h1>
+    <p>Course: CS 2206 - Database Management System</p>
+    <div style="margin-top: 50px; display: flex; justify-content: space-around;">
+        <div>____________________<br><b>RONALD T. LAVA, MSIT</b><br>Instructor</div>
+        <div>____________________<br><b>SirLavz2026</b><br>CCS Department</div>
+    </div>
+    <button onclick="window.print()" style="margin-top: 50px; padding: 10px 20px;">Print Certificate</button>
+</div>
+
+<script>
+    const dbData = [
+        { title: "Retrieval", desc: "Define the query to fetch all items.", temp: "CREATE PROC GetAll<br>AS BEGIN<br> [S] <br>FROM Products;<br>END;", opt: ["SELECT *", "UPDATE", "DROP", "INSERT"], ans: ["SELECT *"], res: "> 3 rows found." },
+        { title: "Input Parameters", desc: "Filter by Product Name parameter.", temp: "SELECT Price FROM Products<br> [S];", opt: ["WHERE Name = @PName", "GROUP BY Name", "ORDER BY Price", "LIMIT 1"], ans: ["WHERE Name = @PName"], res: "> Filter Applied." },
+        { title: "Aggregates", desc: "Calculate total stock value.", temp: "SELECT [S] <br>AS TotalStock FROM Products;", opt: ["SUM(Price * StockQty)", "COUNT(*)", "AVG(Price)", "MAX(Price)"], ans: ["SUM(Price * StockQty)"], res: "> Total Value: $13,250.00" },
+        { title: "Relational Join", desc: "Connect Products to Categories.", temp: "FROM Products p<br> [S] <br>ON p.CatID = c.ID;", opt: ["INNER JOIN Categories c", "OUTER JOIN Orders", "UNION ALL", "JOIN Users"], ans: ["INNER JOIN Categories c"], res: "> Relation established." },
+        { title: "Assignments", desc: "Assign a value to the tax variable.", temp: "DECLARE @VAT DEC(3,2);<br> [S] = 0.12;", opt: ["SET @VAT", "VAR @VAT", "UPDATE @VAT", "@VAT =="], ans: ["SET @VAT"], res: "> VAT set to 12%." },
+        { title: "Price Logic", desc: "Apply a 10% discount to price.", temp: "SELECT Name, [S] <br>FROM Products;", opt: ["Price * 0.90", "Price - 10", "Price / 2", "Price + 0.90"], ans: ["Price * 0.90"], res: "> Discount logic OK." },
+        { title: "IF Logic", desc: "Print message if quantity is low.", temp: "IF (@Qty < 5)<br> [S];", opt: ["PRINT 'Restock Now'", "SELECT *", "DROP TABLE", "COMMIT"], ans: ["PRINT 'Restock Now'"], res: "> Conditional logic OK." },
+        { title: "Data Update", desc: "Update price for a specific ID.", temp: "UPDATE Products<br> [S] <br>WHERE ProductID = @ID;", opt: ["SET Price = @NewP", "MODIFY Price", "CHANGE Price", "SET @NewP"], ans: ["SET Price = @NewP"], res: "> Table Updated." },
+        { title: "Categorization", desc: "Group items by Category ID.", temp: "SELECT CatID, COUNT(*)<br>FROM Products<br> [S];", opt: ["GROUP BY CatID", "ORDER BY CatID", "WHERE CatID", "HAVING CatID"], ans: ["GROUP BY CatID"], res: "> Grouping Success." },
+        { title: "Data Audit", desc: "Check if orders exist for an item.", temp: "IF [S] <br>PRINT 'Order Found';", opt: ["EXISTS(SELECT 1)", "COUNT > 0", "TABLE != NULL", "FOUND(1)"], ans: ["EXISTS(SELECT 1)"], res: "> Final Audit Passed!" }
+    ];
+
+    let currentLvl = 0;
+
+    function init() {
+        const lvl = dbData[currentLvl];
+        document.getElementById('lvl-count').innerText = `Step ${currentLvl + 1} of 10`;
+        document.getElementById('lvl-name').innerText = lvl.title;
+        document.getElementById('lvl-desc').innerText = lvl.desc;
+        document.getElementById('p-fill').style.width = `${(currentLvl + 1) * 10}%`;
+        document.getElementById('editor').innerHTML = lvl.temp.replace(/\[S\]/g, '<span class="slot" onclick="this.innerText=\'\'"></span>');
+        
+        const box = document.getElementById('options-box');
+        box.innerHTML = '';
+        lvl.opt.sort(() => Math.random() - 0.5).forEach(o => {
+            const b = document.createElement('div');
+            b.className = 'block-item'; b.innerText = o;
+            b.onclick = () => { const s = document.querySelector('.slot'); if(s) { s.innerText = o; validate(); } };
+            box.appendChild(b);
+        });
+        document.getElementById('term').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'none';
+    }
+
+    function validate() {
+        const slots = document.querySelectorAll('.slot');
+        const user = Array.from(slots).map(s => s.innerText);
+        if (JSON.stringify(user) === JSON.stringify(dbData[currentLvl].ans)) {
+            document.getElementById('term').innerHTML = dbData[currentLvl].res;
+            document.getElementById('term').style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'block';
+        }
+    }
+
+    function handleNext() {
+        if (currentLvl < 9) { currentLvl++; init(); } 
+        else {
+            const name = prompt("Enter Name for Certificate:");
+            document.getElementById('main-lab').style.display = 'none';
+            document.getElementById('cert-view').style.display = 'block';
+            document.getElementById('user-name').innerText = name || "Successful Student";
+            document.body.style.background = "white";
+        }
+    }
+    init();
+</script>
+</body>
+</html>
