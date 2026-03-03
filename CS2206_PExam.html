@@ -1,0 +1,227 @@
+ <!DOCTYPE html>
+<html>
+<head>
+<title>CS 2206 – DBMS Prelim Examination</title>
+<style>
+body{
+font-family:Arial, sans-serif;
+background:#f4f6f9;
+margin:0;
+padding:20px;
+}
+.container{
+max-width:1000px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+h1{
+text-align:center;
+color:#002147;
+}
+.question{
+margin-bottom:15px;
+padding:10px;
+background:#f9f9f9;
+border-radius:5px;
+}
+button{
+padding:10px 20px;
+background:#002147;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+button:hover{
+background:#004080;
+}
+#result{
+display:none;
+margin-top:20px;
+padding:15px;
+background:#e8f5e9;
+border-radius:5px;
+}
+#certificate{
+display:none;
+margin-top:30px;
+background:white;
+padding:40px;
+border:10px solid #002147;
+border-radius:10px;
+text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>CS 2206 – DBMS Preliminary Examination</h1>
+
+<h3>Student Information</h3>
+<input type="text" id="studentName" placeholder="Full Name" style="width:100%;padding:8px;margin-bottom:10px;">
+<input type="text" id="studentSection" placeholder="Course / Section" style="width:100%;padding:8px;margin-bottom:20px;">
+
+<form id="examForm"></form>
+
+<br>
+<button onclick="submitExam()">Submit Exam</button>
+
+<div id="result"></div>
+
+<div id="certificate">
+<h1>Certificate of Achievement</h1>
+<p>This certifies that</p>
+<h2 id="certName"></h2>
+<p>has successfully passed</p>
+<h3>CS 2206 – Database Management Systems</h3>
+<p>Preliminary Examination</p>
+<p id="certScore"></p>
+<p id="certDate"></p>
+<br><br>
+<p>______________________________</p>
+<p>Instructor Signature</p>
+<button onclick="window.print()">Print Certificate</button>
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+/* 1-70 COMPLETE */
+
+{q:"1. What does DBMS stand for?", options:["Data Backup Management System","Database Management System","Data Base Monitoring Service","Database Migration Software"], correct:1},
+{q:"2. Which language is used to manage databases?", options:["HTML","CSS","SQL","Python"], correct:2},
+{q:"3. SQL stands for?", options:["Structured Query Language","Simple Query Language","Sequential Query Language","System Query Logic"], correct:0},
+{q:"4. Which command retrieves data?", options:["SELECT","INSERT","UPDATE","DELETE"], correct:0},
+{q:"5. Primary Key must be?", options:["Duplicate","Null","Unique","Optional"], correct:2},
+{q:"6. Foreign Key is used to?", options:["Delete records","Create backup","Link tables","Encrypt data"], correct:2},
+{q:"7. Which normal form removes partial dependency?", options:["1NF","2NF","3NF","BCNF"], correct:1},
+{q:"8. Which clause filters grouped data?", options:["WHERE","HAVING","GROUP BY","ORDER BY"], correct:1},
+{q:"9. Aggregate function example?", options:["SUM()","SELECT()","JOIN()","DROP()"], correct:0},
+{q:"10. Which JOIN returns matching records only?", options:["LEFT JOIN","RIGHT JOIN","INNER JOIN","FULL JOIN"], correct:2},
+
+{q:"11. Which command adds data?", options:["INSERT","SELECT","DROP","TRUNCATE"], correct:0},
+{q:"12. DELETE removes?", options:["Database","Table structure","Rows","Columns"], correct:2},
+{q:"13. Which constraint prevents null values?", options:["UNIQUE","PRIMARY KEY","NOT NULL","FOREIGN KEY"], correct:2},
+{q:"14. GROUP BY is used with?", options:["Aggregate functions","Constraints","Indexes","Triggers"], correct:0},
+{q:"15. COUNT() returns?", options:["Sum","Average","Number of rows","Max value"], correct:2},
+{q:"16. Which normal form removes transitive dependency?", options:["1NF","2NF","3NF","4NF"], correct:2},
+{q:"17. DDL stands for?", options:["Data Definition Language","Data Deletion Language","Data Design Logic","Data Dynamic Language"], correct:0},
+{q:"18. DML includes?", options:["SELECT","CREATE","DROP","ALTER"], correct:0},
+{q:"19. TRUNCATE does?", options:["Delete structure","Delete rows","Backup table","Rename table"], correct:1},
+{q:"20. UNIQUE constraint ensures?", options:["No duplicates","No null","Sorted order","Linked table"], correct:0},
+
+{q:"21. ORDER BY sorts?", options:["Tables","Rows","Columns","Indexes"], correct:1},
+{q:"22. HAVING is used after?", options:["WHERE","GROUP BY","SELECT","INSERT"], correct:1},
+{q:"23. EXISTS is used with?", options:["Subquery","JOIN","Constraint","Index"], correct:0},
+{q:"24. ANY compares?", options:["All values","Any value","No value","Primary key"], correct:1},
+{q:"25. ALL requires?", options:["At least one true","All true","None true","Unique value"], correct:1},
+{q:"26. 1NF requires?", options:["No duplicates","Atomic values","No foreign key","Primary key"], correct:1},
+{q:"27. BCNF fixes?", options:["Functional dependency issues","Null issues","Duplicate keys","Indexes"], correct:0},
+{q:"28. Which removes table?", options:["DELETE","DROP","REMOVE","CLEAR"], correct:1},
+{q:"29. Which modifies structure?", options:["ALTER","UPDATE","INSERT","DELETE"], correct:0},
+{q:"30. AVG() calculates?", options:["Sum","Average","Count","Min"], correct:1},
+
+{q:"31. MIN() returns?", options:["Smallest value","Largest value","Average","Total"], correct:0},
+{q:"32. MAX() returns?", options:["Largest value","Smallest value","Sum","Count"], correct:0},
+{q:"33. A view is?", options:["Virtual table","Physical copy","Index","Constraint"], correct:0},
+{q:"34. Stored procedure is?", options:["Saved SQL block","Table","Constraint","View"], correct:0},
+{q:"35. Trigger executes?", options:["Manually","Automatically","Never","Randomly"], correct:1},
+{q:"36. Index improves?", options:["Security","Speed","Backup","Design"], correct:1},
+{q:"37. Which ensures referential integrity?", options:["Primary Key","Foreign Key","Index","View"], correct:1},
+{q:"38. Subquery is?", options:["Query inside query","Delete query","Join query","DDL"], correct:0},
+{q:"39. LEFT JOIN returns?", options:["All left records","All right","Matching only","None"], correct:0},
+{q:"40. RIGHT JOIN returns?", options:["All right records","All left","Matching only","None"], correct:0},
+
+{q:"41. FULL JOIN returns?", options:["All records both tables","Left only","Right only","Matching only"], correct:0},
+{q:"42. UPDATE modifies?", options:["Structure","Rows","Database","Index"], correct:1},
+{q:"43. WHERE filters?", options:["Before grouping","After grouping","After sorting","None"], correct:0},
+{q:"44. DEFAULT sets?", options:["Initial value","Foreign key","Index","Null only"], correct:0},
+{q:"45. CHECK constraint?", options:["Validates condition","Deletes row","Joins table","Creates key"], correct:0},
+{q:"46. Composite key is?", options:["Single column","Multiple columns","Foreign key","Index"], correct:1},
+{q:"47. Candidate key is?", options:["Possible primary key","Foreign key","Index","Null key"], correct:0},
+{q:"48. Super key?", options:["Unique identifier","Foreign key","Index","Constraint"], correct:0},
+{q:"49. Database is?", options:["Collection of tables","Single file","Index","Query"], correct:0},
+{q:"50. Entity represents?", options:["Object","Query","Index","Constraint"], correct:0},
+
+{q:"51. Attribute represents?", options:["Property","Key","Table","Join"], correct:0},
+{q:"52. Relationship connects?", options:["Entities","Queries","Indexes","Constraints"], correct:0},
+{q:"53. ERD stands for?", options:["Entity Relationship Diagram","Extended Record Design","Entity Record Data","Electronic Relation Diagram"], correct:0},
+{q:"54. Cardinality shows?", options:["Number of relationships","Index count","Table size","Null value"], correct:0},
+{q:"55. One-to-many means?", options:["One record relates to many","Many to one only","One to one only","None"], correct:0},
+{q:"56. Many-to-many resolved using?", options:["Bridge table","Index","Trigger","View"], correct:0},
+{q:"57. Transaction ensures?", options:["ACID","Speed","Design","Index"], correct:0},
+{q:"58. ACID stands for?", options:["Atomicity Consistency Isolation Durability","Access Control Integrity Data","Automatic Control Index Design","All Combined Integrated Data"], correct:0},
+{q:"59. COMMIT saves?", options:["Changes","Index","Structure","Backup"], correct:0},
+{q:"60. ROLLBACK undoes?", options:["Changes","Index","Structure","Table"], correct:0},
+
+{q:"61. UNION combines?", options:["Result sets","Tables","Indexes","Constraints"], correct:0},
+{q:"62. INTERSECT returns?", options:["Common rows","All rows","Left only","Right only"], correct:0},
+{q:"63. LIKE is used for?", options:["Pattern matching","Joining","Deleting","Grouping"], correct:0},
+{q:"64. % wildcard means?", options:["Any sequence","Single char","Number only","Null"], correct:0},
+{q:"65. _ wildcard means?", options:["Single character","All values","Number only","Space"], correct:0},
+{q:"66. AUTO_INCREMENT does?", options:["Automatic numbering","Delete row","Index column","Join table"], correct:0},
+{q:"67. NULL means?", options:["No value","Zero","Blank space","Duplicate"], correct:0},
+{q:"68. Schema is?", options:["Database structure","Query","Index","Key"], correct:0},
+{q:"69. Backup prevents?", options:["Data loss","Duplicates","Null","Joins"], correct:0},
+{q:"70. Optimization improves?", options:["Performance","Design","Security","Constraint"], correct:0}
+
+];
+
+const form = document.getElementById("examForm");
+
+questions.forEach((item,index)=>{
+let div=document.createElement("div");
+div.classList.add("question");
+div.innerHTML=`<p><b>${item.q}</b></p>`;
+item.options.forEach((opt,i)=>{
+div.innerHTML+=`<label><input type="radio" name="q${index}" value="${i}"> ${opt}</label><br>`;
+});
+form.appendChild(div);
+});
+
+function submitExam(){
+let name=document.getElementById("studentName").value.trim();
+let section=document.getElementById("studentSection").value.trim();
+
+if(name===""||section===""){alert("Please fill Student Info.");return;}
+
+let score=0;
+
+for(let i=0;i<questions.length;i++){
+let selected=document.querySelector(`input[name="q${i}"]:checked`);
+if(!selected){alert("Answer all questions.");return;}
+if(parseInt(selected.value)===questions[i].correct) score++;
+}
+
+let percent=((score/questions.length)*100).toFixed(2);
+
+document.getElementById("result").style.display="block";
+document.getElementById("result").innerHTML=
+`<h2>Exam Result</h2>
+<p><b>Name:</b> ${name}</p>
+<p><b>Section:</b> ${section}</p>
+<p><b>Score:</b> ${score}/70</p>
+<p><b>Percentage:</b> ${percent}%</p>`;
+
+if(percent>=75){
+document.getElementById("certificate").style.display="block";
+document.getElementById("certName").innerText=name;
+document.getElementById("certScore").innerText="Final Score: "+percent+"%";
+document.getElementById("certDate").innerText="Date: "+new Date().toLocaleDateString();
+}else{
+alert("Did not reach 75% passing rate.");
+}
+}
+
+</script>
+
+</body>
+</html>
