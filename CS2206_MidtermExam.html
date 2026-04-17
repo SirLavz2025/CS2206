@@ -1,0 +1,364 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LU - CCS Secure Exam Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .main-container { display: grid; grid-template-columns: 1fr 360px; gap: 25px; padding: 25px; max-width: 1450px; margin: auto; }
+        .quiz-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); min-height: 600px; background: white; }
+        .header-accent { border-top: 5px solid #004a99; border-radius: 15px 15px 0 0; }
+        .option-btn { text-align: left; margin-bottom: 12px; border: 2px solid #edf2f7; transition: 0.3s; padding: 20px; width: 100%; background: white; border-radius: 12px; font-size: 1.05rem; }
+        .option-btn:hover { border-color: #004a99; background-color: #f0f7ff; transform: translateY(-2px); }
+        .selected-opt { background-color: #e6f0ff !important; border-color: #004a99 !important; color: #004a99 !important; font-weight: 600; }
+        .proctor-panel { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); position: sticky; top: 20px; height: fit-content; }
+        video { width: 100%; border-radius: 10px; transform: scaleX(-1); background: #2d3748; }
+        .log-box { height: 220px; overflow-y: auto; background: #f8fafc; border-radius: 10px; padding: 15px; font-size: 0.8rem; margin-top: 15px; border: 1px solid #e2e8f0; }
+        #rec-indicator { color: #e53e3e; animation: blink 1.5s infinite; display: none; font-weight: bold; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="card quiz-card p-4 header-accent">
+        <div id="setup-screen" class="text-center py-5">
+            <img src="lulogo.png" width="60px" height="60px" alt="Logo" class="mb-4"> <h2 class="fw-bold">Laguna University</h2>
+            <h4 class="text-muted mb-4">College of Computer Studies</h4>
+            <div class="p-4 mx-auto border rounded shadow-sm" style="max-width: 450px; background: #fff;">
+                <p class="small text-uppercase fw-bold text-primary">CS 2206 - Database Management System</p>
+                <input type="text" id="student-name" class="form-control mb-3 py-2" placeholder="Full Name (Last Name, First Name)" required>
+                <input type="text" id="student-id" class="form-control mb-4 py-2" placeholder="Student ID Number" required>
+                <button class="btn btn-primary btn-lg w-100 shadow" onclick="startSecureExam()">Enter Examination Room</button>
+            </div>
+             
+        </div>
+
+        <div id="exam-area" class="d-none">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <div>
+                    <h5 class="mb-0 text-primary fw-bold">CS 2206: Midterm Exam</h5>
+                    <small class="text-muted">Instructor: Ronald T. Lava, MSIT</small>
+                </div>
+                <span id="progress-text" class="badge bg-dark px-3 py-2">Question 1/50</span>
+            </div>
+            <div class="progress mb-4" style="height: 8px;"><div id="progress-bar" class="progress-bar bg-primary" style="width: 2%"></div></div>
+            
+            <div id="quiz-content">
+                <h4 id="question-text" class="mb-4 fw-bold text-dark">...</h4>
+                <div id="options-container" class="d-grid gap-2"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                <button class="btn btn-outline-secondary px-4 invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
+                <button id="next-btn" class="btn btn-primary px-5 shadow" onclick="nextQuestion()">Next Question <i class="fas fa-arrow-right ms-2"></i></button>
+                <button id="submit-btn" class="btn btn-success px-5 d-none shadow" onclick="finishExam()">Submit Final Answers</button>
+            </div>
+        </div>
+
+        <div id="result-area" class="text-center d-none py-5">
+            <div class="mb-4">
+                <i class="fas fa-award fa-5x text-warning"></i>
+            </div>
+            <h1 class="fw-bold">Assessment Complete</h1>
+            <h2 class="display-5 text-primary mb-4">Score: <span id="final-score">0</span> / 50</h2>
+            <div class="card mx-auto mb-4 border-0 bg-light" style="max-width: 500px;">
+                <div class="card-body">
+                    <p class="mb-3">Your examination has been recorded and submitted to the CCS portal.</p>
+                    <button class="btn btn-dark btn-lg w-100 mb-2" onclick="generatePDF()">
+                        <i class="fas fa-file-pdf me-2"></i>Generate Official Certificate
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted small">Please wait for the screen recording download to complete before closing.</p>
+        </div>
+    </div>
+
+    <div class="proctor-panel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span id="rec-indicator"><i class="fas fa-circle me-1"></i> MONITORING</span>
+            <span class="badge bg-primary">CCS PROCTOR</span>
+        </div>
+        <video id="webcam" autoplay muted playsinline></video>
+        <h6 class="mt-4 small fw-bold text-uppercase text-muted border-bottom pb-2">Activity Stream</h6>
+        <div class="log-box" id="audit-logs"></div>
+        <div class="mt-3 text-center">
+            <small class="text-muted">SirLavz2026 | LU-CCS</small>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- DATA PREPARATION ---
+const rawData = [
+    { q: "Which version of MySQL first introduced stored procedures?", o: ["Version 4.1", "Version 5.0", "Version 5.1", "Version 8.0"], a: 1 },
+    { q: "A stored procedure is defined as a collection of:", o: ["Java classes", "SQL statements used together", "PHP scripts", "HTML tags"], a: 1 },
+    { q: "Which SQL standard did MySQL implement for stored procedures?", o: ["SQL:1992", "SQL:1999", "SQL:2003", "SQL:2008"], a: 2 },
+    { q: "What is a primary advantage of stored procedures regarding network traffic?", o: ["Increase trips to DB", "Encrypt data", "Reduce traffic by combining queries", "Disable network"], a: 2 },
+    { q: "How do stored procedures improve security?", o: ["Require root password", "Prevent SQL injection via parameters", "Hide DB from internet", "Delete data after reading"], a: 1 },
+    { q: "Where does MySQL store stored procedure data?", o: ["information_schema", "mysql.proc table", "Flat file", "performance_schema"], a: 1 },
+    { q: "Maximum length for a stored procedure name?", o: ["32 chars", "64 chars", "128 chars", "256 chars"], a: 1 },
+    { q: "Why change the DELIMITER in the MySQL client?", o: ["Speed", "Allow semicolons inside code", "Encryption", "End of procedure"], a: 1 },
+    { q: "Which parameter type is the default?", o: ["OUT", "INOUT", "IN", "GLOBAL"], a: 2 },
+    { q: "What is the function of an OUT parameter?", o: ["Pass data in", "Set in procedure/accessed by caller", "Terminate procedure", "Print results"], a: 1 },
+    { q: "Which characteristic determines execution permissions?", o: ["LANGUAGE", "COMMENT", "SQL SECURITY", "DETERMINISTIC"], a: 2 },
+    { q: "If SQL SECURITY is INVOKER, it runs with privileges of:", o: ["Creator", "Root", "The user calling it", "Anonymous"], a: 2 },
+    { q: "Order of DECLARE statements in BEGIN...END?", o: ["Cursors, Handlers, Vars", "Handlers, Cursors, Vars", "Vars, Cursors, Handlers", "Vars, Handlers, Cursors"], a: 2 },
+    { q: "Which statement executes a stored procedure?", o: ["RUN", "EXECUTE", "CALL", "START"], a: 2 },
+    { q: "Which flow control is NOT supported by MySQL?", o: ["IF", "WHILE", "FOR", "LOOP"], a: 2 },
+    { q: "Command to see procedure source code?", o: ["SHOW STATUS", "DESCRIBE", "SHOW CREATE PROCEDURE", "SELECT *"], a: 2 },
+    { q: "Permission needed to run a procedure?", o: ["SELECT", "CREATE ROUTINE", "EXECUTE", "ALTER"], a: 2 },
+    { q: "Creating a procedure with no database selected results in:", o: ["Random DB", "Error", "Auto-create", "Test DB"], a: 1 },
+    { q: "What is 'Encapsulation' in procedures?", o: ["Smaller DB", "Black box usage", "Prevents changes", "Auto-backup"], a: 1 },
+    { q: "True or False: Stored procedures are independent of the storage engine.", o: ["True", "False"], a: 0 },
+    { q: "Difference between stored function and procedure?", o: ["Procedures are faster", "Functions return a value/use in expressions", "Functions can't touch tables", "One statement only"], a: 1 },
+    { q: "Keyword to send a value back from a function?", o: ["OUTPUT", "SEND", "RETURN", "RESULT"], a: 2 },
+    { q: "What is a 'Trigger'?", o: ["Server reboot", "Automatic object on table modification", "Scheduled task", "Delete command"], a: 1 },
+    { q: "Triggers activate on which three statements?", o: ["SELECT, INSERT, UPDATE", "CREATE, ALTER, DROP", "INSERT, UPDATE, DELETE", "GRANT, REVOKE"], a: 2 },
+    { q: "Trigger timing options?", o: ["BEFORE/AFTER", "DURING/AFTER", "START/END", "FAST/SLOW"], a: 0 },
+    { q: "MySQL 'Event' is similar to:", o: ["grep", "cron", "bash", "ls"], a: 1 },
+    { q: "Purpose of an Event?", o: ["Log logins", "Execute SQL on a schedule", "Prevent deletion", "Speed up SELECT"], a: 1 },
+    { q: "Where to check Event activity?", o: ["Browser", "Error log", "information_schema", "event_log"], a: 2 },
+    { q: "Clause indicating a function only reads data?", o: ["NO SQL", "READS SQL DATA", "MODIFIES SQL DATA", "DETERMINISTIC"], a: 1 },
+    { q: "How many RETURN statements must a function have?", o: ["0", "At least 1", "Exactly 2", "Max 5"], a: 1 },
+    { q: "True or False: A trigger can log table changes.", o: ["True", "False"], a: 0 },
+    { q: "BEGIN...END block forms what?", o: ["Simple statement", "Compound statement", "Comment", "Table"], a: 1 },
+    { q: "Trigger keyword for value before update?", o: ["PREVIOUS", "OLD", "NEW", "BEFORE"], a: 1 },
+    { q: "Trigger keyword for value after update?", o: ["RECENT", "OLD", "NEW", "AFTER"], a: 2 },
+    { q: "Statement to choose between blocks based on value?", o: ["LOOP", "CASE", "WHILE", "REPEAT"], a: 1 },
+    { q: "What is a database cursor?", o: ["Text editor line", "Pointer to result set record", "Duplicate tool", "Security bypass"], a: 1 },
+    { q: "Which version introduced Cursors?", o: ["4.0", "5.0", "5.5", "8.0"], a: 1 },
+    { q: "MySQL supports which cursor type?", o: ["Client-side", "Server-side", "Bi-directional", "Write-only"], a: 1 },
+    { q: "What does 'forward-only' mean for cursors?", o: ["New tables only", "Forward/Backward", "One record at a time forward", "Skip records"], a: 2 },
+    { q: "What is an 'asensitive' cursor?", o: ["Points to temp copy", "Points at real data", "Ignores case", "Emotional"], a: 1 },
+    { q: "Main drawback of asensitive cursors?", o: ["Slow", "Memory heavy", "Data changes affect cursor", "10 row limit"], a: 2 },
+    { q: "MySQL cursors are:", o: ["Read-only", "Read-write", "Write-only", "Append-only"], a: 0 },
+    { q: "Statement to move cursor and get data?", o: ["OPEN", "NEXT", "FETCH", "MOVE"], a: 2 },
+    { q: "Correct sequence for cursor use?", o: ["OPEN, FETCH, CLOSE, DECLARE", "DECLARE, OPEN, FETCH, CLOSE", "FETCH, OPEN, DECLARE, CLOSE", "DECLARE, FETCH, OPEN, CLOSE"], a: 1 },
+    { q: "Handler condition to detect end of results?", o: ["NOT FOUND", "SQLERROR", "FINISHED", "EXIT"], a: 0 },
+    { q: "What must you do when finished with a cursor?", o: ["DELETE", "CLOSE", "COMMIT", "DROP"], a: 1 },
+    { q: "How many records does a cursor FETCH at once?", o: ["All", "Two", "One", "Half"], a: 2 },
+    { q: "To restart a MySQL cursor, you must:", o: ["Use PREVIOUS", "Close and reopen", "Use RESTART", "Cannot restart"], a: 1 },
+    { q: "Where can cursors be used?", o: ["Client only", "Stored routines only", "Standard SELECT", "HTML forms"], a: 1 },
+    { q: "Purpose of DECLARE CONTINUE HANDLER for cursors?", o: ["Start service", "Handle end of data", "Skip errors", "Close connection"], a: 1 }
+];
+
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+const quizData = shuffle([...rawData]);
+let currentIdx = 0;
+let userAnswers = new Array(quizData.length).fill(null);
+let mediaRecorder;
+let recordedChunks = [];
+let model;
+const video = document.getElementById('webcam');
+
+// --- APP INITIALIZATION ---
+async function startSecureExam() {
+    const name = document.getElementById('student-name').value;
+    const sid = document.getElementById('student-id').value;
+    if(!name || !sid) { alert("Please provide your full Name and Student ID."); return; }
+
+    try {
+        const camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = camStream;
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        
+        mediaRecorder = new MediaRecorder(screenStream);
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.start();
+
+        model = await blazeface.load();
+        
+        document.getElementById('setup-screen').classList.add('d-none');
+        document.getElementById('exam-area').classList.remove('d-none');
+        document.getElementById('rec-indicator').style.display = 'block';
+        
+        showQuestion();
+        setInterval(monitorFace, 5000);
+        
+        // Log Start
+        logEvent("Session Initiated");
+    } catch { alert("Permissions for Camera and Screen Share are mandatory."); }
+}
+
+function logEvent(msg) {
+    const log = document.createElement('div');
+    log.className = "mb-1 border-bottom pb-1 text-muted";
+    log.innerHTML = `<span class='fw-bold'>[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+    document.getElementById('audit-logs').prepend(log);
+}
+
+async function monitorFace() {
+    if (!model) return;
+    const predictions = await model.estimateFaces(video, false);
+    if (predictions.length === 0) logEvent("Student not in frame");
+    else if (predictions.length > 1) logEvent("Multiple people detected");
+}
+
+// --- CORE QUIZ ---
+function showQuestion() {
+    const q = quizData[currentIdx];
+    document.getElementById('question-text').innerText = `${currentIdx + 1}. ${q.q}`;
+    document.getElementById('progress-text').innerText = `Question ${currentIdx + 1}/50`;
+    document.getElementById('progress-bar').style.width = `${((currentIdx + 1)/50)*100}%`;
+    
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    q.o.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = `option-btn ${userAnswers[currentIdx] === i ? 'selected-opt' : ''}`;
+        btn.innerHTML = `<span class="badge bg-light text-dark me-3">${String.fromCharCode(65+i)}</span> ${opt}`;
+        btn.onclick = () => { userAnswers[currentIdx] = i; showQuestion(); };
+        container.appendChild(btn);
+    });
+
+    document.getElementById('prev-btn').classList.toggle('invisible', currentIdx === 0);
+    const isLast = currentIdx === quizData.length - 1;
+    document.getElementById('next-btn').classList.toggle('d-none', isLast);
+    document.getElementById('submit-btn').classList.toggle('d-none', !isLast);
+}
+
+function nextQuestion() { currentIdx++; showQuestion(); }
+function prevQuestion() { currentIdx--; showQuestion(); }
+
+function finishExam() {
+    if(!confirm("Submit final answers?")) return;
+    if (mediaRecorder) mediaRecorder.stop();
+    
+    let score = 0;
+    userAnswers.forEach((ans, i) => { if(ans === quizData[i].a) score++; });
+    
+    document.getElementById('exam-area').classList.add('d-none');
+    document.getElementById('result-area').classList.remove('d-none');
+    document.getElementById('final-score').innerText = score;
+    
+    setTimeout(downloadVideo, 2000);
+}
+
+function downloadVideo() {
+    const blob = new Blob(recordedChunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `LU_Exam_${Date.now()}.webm`; a.click();
+}
+
+// --- FORMAL CERTIFICATE GENERATION ---
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const name = document.getElementById('student-name').value;
+    const sid = document.getElementById('student-id').value;
+    const score = document.getElementById('final-score').innerText;
+
+    const footerText = "SirLavz2026 | CS 2206 - Midterm Examination | CCS | Laguna University";
+
+    // --- PAGE 1: FORMAL CERTIFICATE ---
+    doc.setDrawColor(0, 74, 153); // Blue Border
+    doc.setLineWidth(1.5);
+    doc.rect(10, 10, 190, 277, 'S'); 
+    
+    doc.setFont("times", "bold");
+    doc.setFontSize(22);
+    doc.text("LAGUNA UNIVERSITY", 105, 40, null, null, "center");
+    
+    doc.setFontSize(16);
+    doc.setFont("times", "normal");
+    doc.text("College of Computer Studies", 105, 48, null, null, "center");
+    
+    doc.setDrawColor(200);
+    doc.line(40, 55, 170, 55);
+
+    doc.setFontSize(28);
+    doc.setFont("times", "bolditalic");
+    doc.setTextColor(0, 74, 153);
+    doc.text("Certificate of Completion", 105, 80, null, null, "center");
+    
+    doc.setTextColor(0);
+    doc.setFontSize(14);
+    doc.setFont("times", "normal");
+    doc.text("This is to certify that", 105, 100, null, null, "center");
+    
+    doc.setFontSize(24);
+    doc.setFont("times", "bold");
+    doc.text(name.toUpperCase(), 105, 115, null, null, "center");
+    doc.setFontSize(12);
+    doc.text(`Student ID: ${sid}`, 105, 122, null, null, "center");
+    
+    doc.setFontSize(14);
+    doc.setFont("times", "normal");
+    doc.text("has successfully completed the proctored assessment for", 105, 140, null, null, "center");
+    
+    doc.setFontSize(18);
+    doc.setFont("times", "bold");
+    doc.text("CS 2206 - Database Management System", 105, 150, null, null, "center");
+    doc.text("Midterm Examination", 105, 158, null, null, "center");
+    
+    doc.setFontSize(16);
+    doc.text(`Rating: ${score} / 50`, 105, 180, null, null, "center");
+
+    doc.setFontSize(12);
+    doc.text("Instructor:", 60, 220);
+    doc.setFont("times", "bold");
+    doc.text("RONALD T. LAVA, MSIT", 60, 226);
+    doc.line(60, 227, 110, 227);
+
+    // Footer P1
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(150);
+    doc.text(footerText, 105, 282, null, null, "center");
+
+    // --- PAGE 2: EXAM CONTENT REVIEW ---
+    doc.addPage();
+    doc.setTextColor(0);
+    doc.setFontSize(16);
+    doc.setFont("times", "bold");
+    doc.text("Detailed Examination Report", 14, 20);
+    
+    const tableData = quizData.map((item, index) => {
+        const studentIdx = userAnswers[index];
+        const correctIdx = item.a;
+        return [
+            index + 1,
+            item.q,
+            item.o[correctIdx],
+            studentIdx !== null ? item.o[studentIdx] : "None",
+            studentIdx === correctIdx ? "PASSED" : "FAILED"
+        ];
+    });
+
+    doc.autoTable({
+        startY: 25,
+        head: [['#', 'Question Stem', 'Correct Answer', 'Student Response', 'Status']],
+        body: tableData,
+        styles: { font: "times", fontSize: 9 },
+        headStyles: { fillColor: [0, 74, 153] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: { 1: { cellWidth: 80 } }
+    });
+
+    // Footer P2
+    doc.setFontSize(8);
+    doc.text(footerText, 105, 290, null, null, "center");
+
+    doc.save(`${name}_CS2206_Midterm.pdf`);
+}
+</script>
+</body>
+</html>
