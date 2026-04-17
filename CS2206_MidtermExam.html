@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,90 +12,48 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; -webkit-user-select: none; }
         
-        /* Responsive Layout Container */
-        .main-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            padding: 15px; 
-            max-width: 1450px; 
-            margin: auto; 
-        }
+        .main-container { display: flex; flex-direction: column; gap: 20px; padding: 15px; max-width: 1450px; margin: auto; }
 
-        /* Desktop Grid Shift */
         @media (min-width: 992px) {
-            .main-container { 
-                flex-direction: row; 
-                padding: 25px; 
-            }
+            .main-container { flex-direction: row; padding: 25px; }
             .quiz-card { flex: 1; }
             .proctor-panel { width: 360px; position: sticky; top: 20px; height: fit-content; }
         }
 
-        .quiz-card { 
-            border-radius: 15px; 
-            border: none; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
-            min-height: 500px; 
-            background: white; 
-            padding: 20px;
-        }
-
+        .quiz-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); min-height: 500px; background: white; padding: 20px; }
         .header-accent { border-top: 5px solid #004a99; border-radius: 15px 15px 0 0; }
         
-        /* Mobile-Friendly Option Buttons */
-        .option-btn { 
-            text-align: left; 
-            margin-bottom: 10px; 
-            border: 2px solid #edf2f7; 
-            transition: 0.2s; 
-            padding: 15px; 
-            width: 100%; 
-            background: white; 
-            border-radius: 12px; 
-            font-size: 1rem; 
-            display: flex;
-            align-items: center;
-        }
-        
-        .option-btn:hover { border-color: #004a99; background-color: #f0f7ff; transform: translateY(-1px); }
+        .option-btn { text-align: left; margin-bottom: 10px; border: 2px solid #edf2f7; transition: 0.2s; padding: 15px; width: 100%; background: white; border-radius: 12px; font-size: 1rem; display: flex; align-items: center; }
+        .option-btn:hover { border-color: #004a99; background-color: #f0f7ff; }
         .selected-opt { background-color: #e6f0ff !important; border-color: #004a99 !important; color: #004a99 !important; font-weight: 600; }
 
-        .proctor-panel { 
-            background: white; 
-            border-radius: 15px; 
-            padding: 20px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
-        }
-
+        .proctor-panel { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         video { width: 100%; border-radius: 10px; transform: scaleX(-1); background: #2d3748; }
         
-        .log-box { 
-            height: 150px; 
-            overflow-y: auto; 
-            background: #f8fafc; 
-            border-radius: 10px; 
-            padding: 10px; 
-            font-size: 0.75rem; 
-            margin-top: 15px; 
-            border: 1px solid #e2e8f0; 
-        }
+        .log-box { height: 150px; overflow-y: auto; background: #f8fafc; border-radius: 10px; padding: 10px; font-size: 0.75rem; margin-top: 15px; border: 1px solid #e2e8f0; }
 
-        /* Responsive typography */
-        @media (max-width: 576px) {
-            .display-5 { font-size: 1.8rem; }
-            #question-text { font-size: 1.1rem; }
-            .btn-lg { font-size: 1rem; padding: 12px; }
-            .main-container { padding: 10px; }
+        /* Security Warning Overlay */
+        #violation-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); color: white; z-index: 10000;
+            justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px;
         }
 
         #rec-indicator { color: #e53e3e; animation: blink 1.5s infinite; display: none; font-weight: bold; font-size: 0.8rem; }
         @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
+
+<div id="violation-overlay">
+    <i class="fas fa-lock fa-4x text-danger mb-3"></i>
+    <h2 class="fw-bold">SECURITY ALERT</h2>
+    <p class="lead">Tab switching, minimizing, or leaving the window is strictly prohibited.</p>
+    <p>This incident has been logged. Multiple violations may result in disqualification.</p>
+    <button class="btn btn-danger px-5 mt-3" onclick="closeViolation()">I AGREE & CONTINUE</button>
+</div>
 
 <div class="main-container">
     <div class="card quiz-card header-accent">
@@ -103,21 +61,24 @@
             <img src="lulogo.png" width="60px" height="60px" alt="Logo" class="mb-3"> 
             <h2 class="fw-bold h3">Laguna University</h2>
             <h5 class="text-muted mb-4">College of Computer Studies</h5>
-            <div class="p-3 p-md-4 mx-auto border rounded shadow-sm" style="max-width: 450px; background: #fff;">
+            <div class="p-4 mx-auto border rounded shadow-sm" style="max-width: 450px; background: #fff;">
                 <p class="small text-uppercase fw-bold text-primary mb-3">CS 2206 - Database Management System</p>
-                <input type="text" id="student-name" class="form-control mb-3 py-2" placeholder="Full Name (Last Name, First Name)" required>
-                <input type="text" id="student-id" class="form-control mb-4 py-2" placeholder="Student ID Number" required>
+                <input type="text" id="student-name" class="form-control mb-3" placeholder="Full Name (Last Name, First Name)" required>
+                <input type="text" id="student-id" class="form-control mb-4" placeholder="Student ID Number" required>
                 <button class="btn btn-primary btn-lg w-100 shadow" onclick="startSecureExam()">Enter Examination Room</button>
             </div>
         </div>
 
         <div id="exam-area" class="d-none">
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-end mb-3 gap-2">
+            <div class="d-flex justify-content-between align-items-end mb-3">
                 <div>
                     <h5 class="mb-0 text-primary fw-bold">CS 2206: Midterm Exam</h5>
                     <small class="text-muted">Instructor: Ronald T. Lava, MSIT</small>
                 </div>
-                <span id="progress-text" class="badge bg-dark px-3 py-2">Question 1/50</span>
+                <div class="text-end">
+                    <span id="violation-badge" class="badge bg-danger d-none mb-1">Violation Logged</span><br>
+                    <span id="progress-text" class="badge bg-dark px-3 py-2">Question 1/50</span>
+                </div>
             </div>
             <div class="progress mb-4" style="height: 8px;"><div id="progress-bar" class="progress-bar bg-primary" style="width: 2%"></div></div>
             
@@ -126,28 +87,25 @@
                 <div id="options-container" class="d-grid gap-1"></div>
             </div>
 
-            <div class="d-flex justify-content-between mt-5 pt-3 border-top gap-2">
-                <button class="btn btn-outline-secondary px-3 px-md-4 invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
-                <button id="next-btn" class="btn btn-primary px-3 px-md-5 shadow" onclick="nextQuestion()">Next <i class="fas fa-arrow-right ms-2"></i></button>
-                <button id="submit-btn" class="btn btn-success px-3 px-md-5 d-none shadow" onclick="finishExam()">Submit Final Answers</button>
+            <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                <button class="btn btn-outline-secondary px-4 invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
+                <button id="next-btn" class="btn btn-primary px-5 shadow" onclick="nextQuestion()">Next</button>
+                <button id="submit-btn" class="btn btn-success px-5 d-none shadow" onclick="finishExam()">Submit Final Answers</button>
             </div>
         </div>
 
         <div id="result-area" class="text-center d-none py-4">
-            <div class="mb-3">
-                <i class="fas fa-award fa-4x text-warning"></i>
-            </div>
+            <div class="mb-3"><i class="fas fa-award fa-4x text-warning"></i></div>
             <h1 class="fw-bold h2">Assessment Complete</h1>
             <h2 class="display-6 text-primary mb-4">Score: <span id="final-score">0</span> / 50</h2>
             <div class="card mx-auto mb-4 border-0 bg-light" style="max-width: 500px;">
                 <div class="card-body">
-                    <p class="mb-3 small">Your examination has been recorded and submitted to the CCS portal.</p>
+                    <p class="mb-3 small">Your record and proof of session are being prepared.</p>
                     <button class="btn btn-dark btn-md w-100 mb-2" onclick="generatePDF()">
-                        <i class="fas fa-file-pdf me-2"></i>Generate Official Certificate
+                        <i class="fas fa-file-pdf me-2"></i>Generate Certificate & Detailed Report
                     </button>
                 </div>
             </div>
-            <p class="text-muted small">Please wait for the recording download before closing.</p>
         </div>
     </div>
 
@@ -159,14 +117,10 @@
         <video id="webcam" autoplay muted playsinline></video>
         <h6 class="mt-3 small fw-bold text-uppercase text-muted border-bottom pb-2">Activity Stream</h6>
         <div class="log-box" id="audit-logs"></div>
-        <div class="mt-3 text-center">
-            <small class="text-muted" style="font-size: 0.7rem;">SirLavz2026 | LU-CCS</small>
-        </div>
     </div>
 </div>
 
 <script>
-// --- DATA PREPARATION ---
 const rawData = [
     { q: "Which version of MySQL first introduced stored procedures?", o: ["Version 4.1", "Version 5.0", "Version 5.1", "Version 8.0"], a: 1 },
     { q: "A stored procedure is defined as a collection of:", o: ["Java classes", "SQL statements used together", "PHP scripts", "HTML tags"], a: 1 },
@@ -220,33 +174,39 @@ const rawData = [
     { q: "Purpose of DECLARE CONTINUE HANDLER for cursors?", o: ["Start service", "Handle end of data", "Skip errors", "Close connection"], a: 1 }
 ];
 
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+const quizData = rawData.sort(() => Math.random() - 0.5);
+let currentIdx = 0, userAnswers = new Array(quizData.length).fill(null);
+let violations = 0, isExamActive = false, mediaRecorder, recordedChunks = [], model;
+
+// --- SECURITY & TAB DETECTION ---
+function initSecurity() {
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden && isExamActive) triggerViolation("Tab/Window Hidden");
+    });
+    window.onblur = () => { if (isExamActive) triggerViolation("Exam Window Unfocused"); };
 }
 
-const quizData = shuffle([...rawData]);
-let currentIdx = 0;
-let userAnswers = new Array(quizData.length).fill(null);
-let mediaRecorder;
-let recordedChunks = [];
-let model;
-const video = document.getElementById('webcam');
+function triggerViolation(reason) {
+    violations++;
+    logEvent(`CRITICAL: ${reason}`);
+    document.getElementById('violation-badge').classList.remove('d-none');
+    document.getElementById('violation-overlay').style.display = 'flex';
+}
 
-// --- APP INITIALIZATION ---
+function closeViolation() { document.getElementById('violation-overlay').style.display = 'none'; }
+
+// --- EXAM ENGINE ---
 async function startSecureExam() {
     const name = document.getElementById('student-name').value;
     const sid = document.getElementById('student-id').value;
-    if(!name || !sid) { alert("Please provide your full Name and Student ID."); return; }
+    if(!name || !sid) { alert("Please complete student info."); return; }
 
     try {
         const camStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = camStream;
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        document.getElementById('webcam').srcObject = camStream;
         
+        // Start Screen Recording
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         mediaRecorder = new MediaRecorder(screenStream);
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
         mediaRecorder.start();
@@ -257,28 +217,27 @@ async function startSecureExam() {
         document.getElementById('exam-area').classList.remove('d-none');
         document.getElementById('rec-indicator').style.display = 'block';
         
+        isExamActive = true;
+        initSecurity();
         showQuestion();
         setInterval(monitorFace, 5000);
-        
-        logEvent("Session Initiated");
-    } catch { alert("Permissions for Camera and Screen Share are mandatory."); }
+        logEvent("Secure Session Initiated");
+    } catch { alert("Camera and Screen Sharing are required to proceed."); }
 }
 
 function logEvent(msg) {
     const log = document.createElement('div');
     log.className = "mb-1 border-bottom pb-1 text-muted";
-    log.innerHTML = `<span class='fw-bold'>[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+    log.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${msg}`;
     document.getElementById('audit-logs').prepend(log);
 }
 
 async function monitorFace() {
     if (!model) return;
-    const predictions = await model.estimateFaces(video, false);
-    if (predictions.length === 0) logEvent("Student not in frame");
-    else if (predictions.length > 1) logEvent("Multiple people detected");
+    const predictions = await model.estimateFaces(document.getElementById('webcam'), false);
+    if (predictions.length === 0) logEvent("Student not in camera frame");
 }
 
-// --- CORE QUIZ ---
 function showQuestion() {
     const q = quizData[currentIdx];
     document.getElementById('question-text').innerText = `${currentIdx + 1}. ${q.q}`;
@@ -287,7 +246,6 @@ function showQuestion() {
     
     const container = document.getElementById('options-container');
     container.innerHTML = '';
-    
     q.o.forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.className = `option-btn ${userAnswers[currentIdx] === i ? 'selected-opt' : ''}`;
@@ -306,7 +264,8 @@ function nextQuestion() { currentIdx++; showQuestion(); }
 function prevQuestion() { currentIdx--; showQuestion(); }
 
 function finishExam() {
-    if(!confirm("Submit final answers?")) return;
+    if(!confirm("Submit answers and finish?")) return;
+    isExamActive = false;
     if (mediaRecorder) mediaRecorder.stop();
     
     let score = 0;
@@ -315,28 +274,27 @@ function finishExam() {
     document.getElementById('exam-area').classList.add('d-none');
     document.getElementById('result-area').classList.remove('d-none');
     document.getElementById('final-score').innerText = score;
-    
-    setTimeout(downloadVideo, 2000);
+
+    // Automatic download of the recording
+    setTimeout(() => {
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `ExamRecord_${document.getElementById('student-id').value}.webm`;
+        a.click();
+    }, 1500);
 }
 
-function downloadVideo() {
-    const blob = new Blob(recordedChunks, { type: "video/webm" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `LU_Exam_${Date.now()}.webm`; a.click();
-}
-
-// --- CERTIFICATE GENERATION ---
+// --- CERTIFICATE & DETAILED REPORT ---
 function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
     const name = document.getElementById('student-name').value;
     const sid = document.getElementById('student-id').value;
     const score = document.getElementById('final-score').innerText;
-
     const footerText = "SirLavz2026 | CS 2206 - Midterm Examination | CCS | Laguna University";
 
-    // P1: Certificate
+    // Certificate Design
     doc.setDrawColor(0, 74, 153);
     doc.setLineWidth(1.5);
     doc.rect(10, 10, 190, 277, 'S'); 
@@ -344,12 +302,9 @@ function generatePDF() {
     doc.setFont("times", "bold");
     doc.setFontSize(22);
     doc.text("LAGUNA UNIVERSITY", 105, 40, null, null, "center");
-    
     doc.setFontSize(16);
     doc.setFont("times", "normal");
     doc.text("College of Computer Studies", 105, 48, null, null, "center");
-    
-    doc.setDrawColor(200);
     doc.line(40, 55, 170, 55);
 
     doc.setFontSize(28);
@@ -369,11 +324,8 @@ function generatePDF() {
     doc.text(`Student ID: ${sid}`, 105, 122, null, null, "center");
     
     doc.setFontSize(14);
-    doc.setFont("times", "normal");
-    doc.text("has successfully completed the proctored assessment for", 105, 140, null, null, "center");
-    
+    doc.text("has successfully completed the assessment for", 105, 140, null, null, "center");
     doc.setFontSize(18);
-    doc.setFont("times", "bold");
     doc.text("CS 2206 - Database Management System", 105, 150, null, null, "center");
     doc.text("Midterm Examination", 105, 158, null, null, "center");
     
@@ -384,17 +336,16 @@ function generatePDF() {
     doc.text("Instructor:", 60, 220);
     doc.setFont("times", "bold");
     doc.text("RONALD T. LAVA, MSIT", 60, 226);
+    doc.line(60, 227, 110, 227);
 
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
     doc.setTextColor(150);
     doc.text(footerText, 105, 282, null, null, "center");
 
-    // P2: Report
+    // Page 2: Detailed Results
     doc.addPage();
     doc.setTextColor(0);
     doc.setFontSize(16);
-    doc.setFont("times", "bold");
     doc.text("Detailed Examination Report", 14, 20);
     
     const tableData = quizData.map((item, index) => {
@@ -411,15 +362,14 @@ function generatePDF() {
 
     doc.autoTable({
         startY: 25,
-        head: [['#', 'Question Stem', 'Correct Answer', 'Student Response', 'Status']],
+        head: [['#', 'Question', 'Correct Answer', 'Your Response', 'Status']],
         body: tableData,
-        styles: { font: "times", fontSize: 9 },
+        styles: { font: "times", fontSize: 8 },
         headStyles: { fillColor: [0, 74, 153] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
         columnStyles: { 1: { cellWidth: 80 } }
     });
 
-    doc.save(`${name}_CS2206_Midterm.pdf`);
+    doc.save(`${name}_CS2206_Result.pdf`);
 }
 </script>
 </body>
