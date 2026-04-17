@@ -13,27 +13,23 @@
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; -webkit-user-select: none; }
         .main-container { padding: 15px; max-width: 900px; margin: auto; display: flex; flex-direction: column; gap: 15px; }
         
+        /* Real-time Status Panel */
         .status-panel { 
             background: #fff; border-radius: 12px; padding: 15px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #004a99; 
+            transition: all 0.3s ease;
         }
         
-        .violation-active { border-left-color: #dc3545; background: #fff5f5; animation: shake 0.5s; }
+        .violation-active { border-left-color: #dc3545 !important; background: #fff5f5 !important; animation: shake 0.5s; }
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(5px); } 50% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
 
         .quiz-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.05); background: white; padding: 25px; }
-        
-        .option-btn { 
-            text-align: left; margin-bottom: 12px; border: 2px solid #edf2f7; 
-            padding: 15px; width: 100%; background: white; border-radius: 12px; 
-            display: flex; align-items: center; cursor: pointer; transition: 0.2s; 
-        }
-        .option-btn:hover { border-color: #004a99; background: #f8fbff; }
+        .option-btn { text-align: left; margin-bottom: 12px; border: 2px solid #edf2f7; padding: 15px; width: 100%; background: white; border-radius: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; }
         .selected-opt { background-color: #e6f0ff !important; border-color: #004a99 !important; color: #004a99 !important; font-weight: 600; }
 
         #violation-overlay, #lock-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0, 0, 0, 0.95); color: white; z-index: 10001; 
+            background: rgba(0, 0, 0, 0.98); color: white; z-index: 10001; 
             justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 30px; 
         }
     </style>
@@ -42,27 +38,26 @@
 
 <div id="lock-overlay">
     <i class="fas fa-user-lock fa-5x mb-4 text-warning"></i>
-    <h1 class="fw-bold">ACCESS DENIED</h1>
-    <p class="lead" id="lock-message">An active exam session is already associated with this ID or browser.</p>
-    <p class="text-muted">You cannot restart or open multiple exam tabs.</p>
+    <h1 class="fw-bold">SESSION LOCKED</h1>
+    <p class="lead" id="lock-message">Entry denied. A session is already active or finished for this ID.</p>
 </div>
 
 <div id="violation-overlay">
-    <i class="fas fa-user-shield fa-5x mb-4"></i>
-    <h1 class="fw-bold text-danger">VIOLATION DETECTED</h1>
-    <p class="lead">Unauthorized window change detected.</p>
+    <i class="fas fa-exclamation-triangle fa-5x mb-4 text-danger"></i>
+    <h1 class="fw-bold">VIOLATION DETECTED</h1>
+    <p class="lead">You moved away from the exam window.</p>
     <div class="bg-white text-dark p-3 rounded mb-4">
         <strong style="font-size: 1.5rem;">Current Violations: <span id="overlay-count">0</span></strong>
     </div>
-    <button class="btn btn-light btn-lg px-5 fw-bold" onclick="closeViolation()">RETURN TO EXAM</button>
+    <button class="btn btn-danger btn-lg px-5 fw-bold" onclick="closeViolation()">RETURN TO EXAM</button>
 </div>
 
 <div class="main-container">
     <div id="realtime-status" class="status-panel d-none">
         <div class="d-flex justify-content-between align-items-center">
-            <div><span class="fw-bold text-primary"><i class="fas fa-shield-alt me-1"></i> Secure Session Active</span></div>
+            <div><span class="fw-bold text-primary"><i class="fas fa-shield-alt me-1"></i> Secure Session</span></div>
             <div class="text-end">
-                <small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">TOTAL VIOLATIONS</small>
+                <small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">VIOLATIONS</small>
                 <span id="live-violation-count" class="badge bg-success fs-6">0</span>
             </div>
         </div>
@@ -71,18 +66,17 @@
     <div class="card quiz-card">
         <div id="setup-screen" class="text-center py-4">
             <h2 class="fw-bold">Laguna University</h2>
-            <p class="text-muted">CS 2206: Database Management System</p>
+            <p class="text-muted">Secure Examination Portal</p>
             <div class="p-4 border rounded bg-light">
                 <input type="text" id="student-name" class="form-control mb-3" placeholder="Full Name">
-                <input type="text" id="student-id" class="form-control mb-4" placeholder="Student ID Number">
-                <button class="btn btn-primary btn-lg w-100" onclick="startExam()">Enter Examination</button>
+                <input type="text" id="student-id" class="form-control mb-4" placeholder="Student ID">
+                <button class="btn btn-primary btn-lg w-100" onclick="startExam()">Start Exam</button>
             </div>
         </div>
 
         <div id="exam-area" class="d-none">
             <div class="d-flex justify-content-between mb-3">
                 <span id="progress-text" class="badge bg-dark">Question 1/50</span>
-                <span class="text-muted small"><i class="fas fa-lock text-success"></i> Secured</span>
             </div>
             <div id="quiz-content">
                 <h4 id="question-text" class="mb-4 fw-bold">...</h4>
@@ -96,16 +90,17 @@
         </div>
 
         <div id="result-area" class="text-center d-none py-4">
-            <h2 class="fw-bold text-success">Submission Successful</h2>
+            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+            <h2 class="fw-bold">Exam Submitted</h2>
             <div class="display-3 text-primary my-3"><span id="final-score">0</span>/50</div>
-            <div class="alert alert-danger py-2" id="final-violation-msg">Security Violations Logged: 0</div>
-            <button class="btn btn-dark btn-lg w-100 mt-2" onclick="generatePDF()">Print Result PDF</button>
+            <p id="final-violation-msg" class="text-danger fw-bold"></p>
+            <button class="btn btn-dark btn-lg w-100 mt-2" onclick="generateOriginalCertificate()">Download Official Certificate</button>
         </div>
     </div>
 </div>
 
 <script>
-// (Quiz data remains the same)
+// Quiz data from your file
 const rawQuestions = [
     { q: "Which version of MySQL first introduced stored procedures?", o: ["Version 4.1", "Version 5.0", "Version 5.1", "Version 8.0"], a: "Version 5.0" },
     { q: "A stored procedure is defined as a collection of:", o: ["Java classes", "SQL statements used together", "PHP scripts", "HTML tags"], a: "SQL statements used together" },
@@ -114,7 +109,7 @@ const rawQuestions = [
     { q: "How do stored procedures improve security?", o: ["Require root password", "Prevent SQL injection via parameters", "Hide DB from internet", "Delete data after reading"], a: "Prevent SQL injection via parameters" },
     { q: "Where does MySQL store stored procedure data?", o: ["information_schema", "mysql.proc table", "Flat file", "performance_schema"], a: "mysql.proc table" },
     { q: "Maximum length for a stored procedure name?", o: ["32 chars", "64 chars", "128 chars", "256 chars"], a: "64 chars" },
-    { q: "Why change the DELIMITER in the MySQL client?", o: ["Speed", "Allow semicolons inside code", "Encryption", "End of procedure"], a: "Allow semicolons code" },
+    { q: "Why change the DELIMITER in the MySQL client?", o: ["Speed", "Allow semicolons inside code", "Encryption", "End of procedure"], a: "Allow semicolons inside code" },
     { q: "Which parameter type is the default?", o: ["OUT", "INOUT", "IN", "GLOBAL"], a: "IN" },
     { q: "What is the function of an OUT parameter?", o: ["Pass data in", "Set in procedure/accessed by caller", "Terminate procedure", "Print results"], a: "Set in procedure/accessed by caller" },
     { q: "Which characteristic determines execution permissions?", o: ["LANGUAGE", "COMMENT", "SQL SECURITY", "DETERMINISTIC"], a: "SQL SECURITY" },
@@ -159,40 +154,34 @@ const rawQuestions = [
     { q: "Purpose of DECLARE CONTINUE HANDLER for cursors?", o: ["Start service", "Handle end of data", "Skip errors", "Close connection"], a: "Handle end of data" }
 ];
 
-let quizData = [];
-let currentIdx = 0, userAnswers = [];
+let quizData = [], userAnswers = [], currentIdx = 0;
 let isExamActive = false, violations = 0, violationLocked = false;
 
-// CHECK SESSION ON LOAD
+// Check for existing session
 window.onload = function() {
     if (localStorage.getItem("examInProgress") === "true") {
-        document.getElementById("lock-message").innerText = "You have already started this exam. Re-entry after a refresh is not permitted to prevent cheating.";
         document.getElementById("lock-overlay").style.display = "flex";
     }
 };
 
 function startExam() {
     const sid = document.getElementById('student-id').value.trim();
-    const sname = document.getElementById('student-name').value.trim();
-
-    if(!sname || !sid) return alert("All fields are required.");
-
-    // CHECK IF THIS ID HAS EVER FINISHED BEFORE
-    if(localStorage.getItem(`finished_${sid}`)) {
-        document.getElementById("lock-message").innerText = "This Student ID has already submitted their exam. Only one attempt is allowed.";
+    if(!sid || !document.getElementById('student-name').value) return alert("All fields required.");
+    
+    if(localStorage.getItem(`done_${sid}`)) {
+        document.getElementById("lock-message").innerText = "ID Already Submitted.";
         document.getElementById("lock-overlay").style.display = "flex";
         return;
     }
 
-    // SET SESSION LOCKS
     localStorage.setItem("examInProgress", "true");
-    localStorage.setItem("activeStudent", sid);
+    localStorage.setItem("sid", sid);
 
-    quizData = shuffle([...rawQuestions]).map(item => {
-        return { q: item.q, o: shuffle([...item.o]), correctText: item.a };
-    });
-    
+    quizData = [...rawQuestions].sort(() => Math.random() - 0.5).map(i => ({
+        q: i.q, o: [...i.o].sort(() => Math.random() - 0.5), a: i.a
+    }));
     userAnswers = new Array(quizData.length).fill(null);
+    
     document.getElementById('setup-screen').classList.add('d-none');
     document.getElementById('exam-area').classList.remove('d-none');
     document.getElementById('realtime-status').classList.remove('d-none');
@@ -200,30 +189,34 @@ function startExam() {
     showQuestion();
 }
 
-// BROWSER REFRESH WARNING
-window.addEventListener('beforeunload', (event) => {
-    if (isExamActive) {
-        event.preventDefault();
-        event.returnValue = 'Refreshing will result in a permanent lock and exam failure.';
-    }
-});
-
-function handleViolation() {
+// REAL-TIME VIOLATION HANDLER
+function recordViolation() {
     if (!isExamActive || violationLocked) return;
-    violationLocked = true; 
+    
+    violationLocked = true;
     violations += 1;
-    document.getElementById('live-violation-count').innerText = violations;
+
+    // Update Live Display
+    const badge = document.getElementById('live-violation-count');
+    badge.innerText = violations;
+    badge.className = "badge bg-danger fs-6";
+    
+    const panel = document.getElementById('realtime-status');
+    panel.classList.add('violation-active');
+
+    // Show Overlay
     document.getElementById('overlay-count').innerText = violations;
     document.getElementById('violation-overlay').style.display = 'flex';
 }
 
-function closeViolation() { 
+function closeViolation() {
     document.getElementById('violation-overlay').style.display = 'none';
+    document.getElementById('realtime-status').classList.remove('violation-active');
     setTimeout(() => { violationLocked = false; }, 500);
 }
 
-document.addEventListener("visibilitychange", () => { if (document.hidden) handleViolation(); });
-window.onblur = () => { handleViolation(); };
+document.addEventListener("visibilitychange", () => { if(document.hidden) recordViolation(); });
+window.onblur = recordViolation;
 
 function showQuestion() {
     const q = quizData[currentIdx];
@@ -244,37 +237,79 @@ function showQuestion() {
     document.getElementById('submit-btn').classList.toggle('d-none', !isLast);
 }
 
-function nextQuestion() { currentIdx++; showQuestion(); window.scrollTo(0,0); }
-function prevQuestion() { currentIdx--; showQuestion(); window.scrollTo(0,0); }
+function nextQuestion() { currentIdx++; showQuestion(); }
+function prevQuestion() { currentIdx--; showQuestion(); }
 
 function finishExam() {
     isExamActive = false;
-    const sid = localStorage.getItem("activeStudent");
-    
-    // PERMANENT FINISH LOCK
     localStorage.removeItem("examInProgress");
-    localStorage.setItem(`finished_${sid}`, "true");
-
+    localStorage.setItem(`done_${localStorage.getItem("sid")}`, "true");
+    
     let score = 0;
-    quizData.forEach((q, i) => { if(userAnswers[i] !== null && q.o[userAnswers[i]] === q.correctText) score++; });
+    quizData.forEach((q, i) => { if(userAnswers[i] !== null && q.o[userAnswers[i]] === q.a) score++; });
+    
     document.getElementById('exam-area').classList.add('d-none');
     document.getElementById('realtime-status').classList.add('d-none');
     document.getElementById('result-area').classList.remove('d-none');
     document.getElementById('final-score').innerText = score;
+    document.getElementById('final-violation-msg').innerText = `Security Violations: ${violations}`;
 }
 
-function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
-
-function generatePDF() {
+// RESTORED ORIGINAL CERTIFICATE DESIGN
+function generateOriginalCertificate() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const name = document.getElementById('student-name').value;
-    const sid = document.getElementById('student-id').value;
-    doc.text("LAGUNA UNIVERSITY EXAM REPORT", 105, 20, null, null, "center");
-    doc.text(`Student: ${name.toUpperCase()} (ID: ${sid})`, 20, 40);
-    doc.text(`Final Score: ${document.getElementById('final-score').innerText} / 50`, 20, 50);
-    doc.text(`Security Violations: ${violations}`, 20, 60);
-    doc.save(`${name}_Result.pdf`);
+    const name = document.getElementById('student-name').value.toUpperCase();
+    const score = document.getElementById('final-score').innerText;
+
+    // Header Branding
+    doc.setFont("times", "bold");
+    doc.setFontSize(20);
+    doc.text("LAGUNA UNIVERSITY", 105, 40, null, null, "center");
+    doc.setFontSize(14);
+    doc.text("COLLEGE OF COMPUTER STUDIES", 105, 48, null, null, "center");
+    
+    doc.setLineWidth(1);
+    doc.line(20, 55, 190, 55);
+    
+    // Body
+    doc.setFontSize(16);
+    doc.setFont("times", "italic");
+    doc.text("This certifies that", 105, 80, null, null, "center");
+    
+    doc.setFontSize(26);
+    doc.setFont("times", "bold");
+    doc.text(name, 105, 100, null, null, "center");
+    
+    doc.setFontSize(14);
+    doc.setFont("times", "normal");
+    doc.text("has successfully completed the", 105, 120, null, null, "center");
+    doc.setFont("times", "bold");
+    doc.text("CS 2206 - Database Management System Midterm Exam", 105, 130, null, null, "center");
+    
+    // Results
+    doc.setFontSize(22);
+    doc.setTextColor(0, 74, 153);
+    doc.text(`RATING: ${score} / 50`, 105, 160, null, null, "center");
+    
+    doc.setFontSize(10);
+    doc.setTextColor(200, 0, 0);
+    doc.text(`Security Integrity: ${violations} Violation(s) Detected`, 105, 170, null, null, "center");
+
+    // Instructor Signature Section
+    doc.setTextColor(0);
+    doc.setFontSize(12);
+    doc.text("Instructor:", 60, 220);
+    doc.setFont("times", "bold");
+    doc.text("RONALD T. LAVA, MSIT", 60, 226);
+    doc.line(60, 227, 110, 227);
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setFont("times", "italic");
+    doc.text("Generated by LU-CCS Secure Exam System - " + new Date().toLocaleString(), 105, 280, null, null, "center");
+
+    doc.save(`${name}_Certificate.pdf`);
 }
 </script>
 </body>
