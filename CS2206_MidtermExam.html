@@ -13,37 +13,106 @@
     
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .main-container { display: grid; grid-template-columns: 1fr 360px; gap: 25px; padding: 25px; max-width: 1450px; margin: auto; }
-        .quiz-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); min-height: 600px; background: white; }
+        
+        /* Responsive Layout Container */
+        .main-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            padding: 15px; 
+            max-width: 1450px; 
+            margin: auto; 
+        }
+
+        /* Desktop Grid Shift */
+        @media (min-width: 992px) {
+            .main-container { 
+                flex-direction: row; 
+                padding: 25px; 
+            }
+            .quiz-card { flex: 1; }
+            .proctor-panel { width: 360px; position: sticky; top: 20px; height: fit-content; }
+        }
+
+        .quiz-card { 
+            border-radius: 15px; 
+            border: none; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+            min-height: 500px; 
+            background: white; 
+            padding: 20px;
+        }
+
         .header-accent { border-top: 5px solid #004a99; border-radius: 15px 15px 0 0; }
-        .option-btn { text-align: left; margin-bottom: 12px; border: 2px solid #edf2f7; transition: 0.3s; padding: 20px; width: 100%; background: white; border-radius: 12px; font-size: 1.05rem; }
-        .option-btn:hover { border-color: #004a99; background-color: #f0f7ff; transform: translateY(-2px); }
+        
+        /* Mobile-Friendly Option Buttons */
+        .option-btn { 
+            text-align: left; 
+            margin-bottom: 10px; 
+            border: 2px solid #edf2f7; 
+            transition: 0.2s; 
+            padding: 15px; 
+            width: 100%; 
+            background: white; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            display: flex;
+            align-items: center;
+        }
+        
+        .option-btn:hover { border-color: #004a99; background-color: #f0f7ff; transform: translateY(-1px); }
         .selected-opt { background-color: #e6f0ff !important; border-color: #004a99 !important; color: #004a99 !important; font-weight: 600; }
-        .proctor-panel { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); position: sticky; top: 20px; height: fit-content; }
+
+        .proctor-panel { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+        }
+
         video { width: 100%; border-radius: 10px; transform: scaleX(-1); background: #2d3748; }
-        .log-box { height: 220px; overflow-y: auto; background: #f8fafc; border-radius: 10px; padding: 15px; font-size: 0.8rem; margin-top: 15px; border: 1px solid #e2e8f0; }
-        #rec-indicator { color: #e53e3e; animation: blink 1.5s infinite; display: none; font-weight: bold; }
+        
+        .log-box { 
+            height: 150px; 
+            overflow-y: auto; 
+            background: #f8fafc; 
+            border-radius: 10px; 
+            padding: 10px; 
+            font-size: 0.75rem; 
+            margin-top: 15px; 
+            border: 1px solid #e2e8f0; 
+        }
+
+        /* Responsive typography */
+        @media (max-width: 576px) {
+            .display-5 { font-size: 1.8rem; }
+            #question-text { font-size: 1.1rem; }
+            .btn-lg { font-size: 1rem; padding: 12px; }
+            .main-container { padding: 10px; }
+        }
+
+        #rec-indicator { color: #e53e3e; animation: blink 1.5s infinite; display: none; font-weight: bold; font-size: 0.8rem; }
         @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <div class="card quiz-card p-4 header-accent">
-        <div id="setup-screen" class="text-center py-5">
-            <img src="https://github.com/SirLavz2025/CS2206/blob/main/lulogo.png" width="60px" height="60px" alt="Logo" class="mb-4"> <h2 class="fw-bold">Laguna University</h2>
-            <h4 class="text-muted mb-4">College of Computer Studies</h4>
-            <div class="p-4 mx-auto border rounded shadow-sm" style="max-width: 450px; background: #fff;">
-                <p class="small text-uppercase fw-bold text-primary">CS 2206 - Database Management System</p>
+    <div class="card quiz-card header-accent">
+        <div id="setup-screen" class="text-center py-4">
+            <img src="lulogo.png" width="60px" height="60px" alt="Logo" class="mb-3"> 
+            <h2 class="fw-bold h3">Laguna University</h2>
+            <h5 class="text-muted mb-4">College of Computer Studies</h5>
+            <div class="p-3 p-md-4 mx-auto border rounded shadow-sm" style="max-width: 450px; background: #fff;">
+                <p class="small text-uppercase fw-bold text-primary mb-3">CS 2206 - Database Management System</p>
                 <input type="text" id="student-name" class="form-control mb-3 py-2" placeholder="Full Name (Last Name, First Name)" required>
                 <input type="text" id="student-id" class="form-control mb-4 py-2" placeholder="Student ID Number" required>
                 <button class="btn btn-primary btn-lg w-100 shadow" onclick="startSecureExam()">Enter Examination Room</button>
             </div>
-             
         </div>
 
         <div id="exam-area" class="d-none">
-            <div class="d-flex justify-content-between align-items-end mb-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-end mb-3 gap-2">
                 <div>
                     <h5 class="mb-0 text-primary fw-bold">CS 2206: Midterm Exam</h5>
                     <small class="text-muted">Instructor: Ronald T. Lava, MSIT</small>
@@ -54,31 +123,31 @@
             
             <div id="quiz-content">
                 <h4 id="question-text" class="mb-4 fw-bold text-dark">...</h4>
-                <div id="options-container" class="d-grid gap-2"></div>
+                <div id="options-container" class="d-grid gap-1"></div>
             </div>
 
-            <div class="d-flex justify-content-between mt-5 pt-3 border-top">
-                <button class="btn btn-outline-secondary px-4 invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
-                <button id="next-btn" class="btn btn-primary px-5 shadow" onclick="nextQuestion()">Next Question <i class="fas fa-arrow-right ms-2"></i></button>
-                <button id="submit-btn" class="btn btn-success px-5 d-none shadow" onclick="finishExam()">Submit Final Answers</button>
+            <div class="d-flex justify-content-between mt-5 pt-3 border-top gap-2">
+                <button class="btn btn-outline-secondary px-3 px-md-4 invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
+                <button id="next-btn" class="btn btn-primary px-3 px-md-5 shadow" onclick="nextQuestion()">Next <i class="fas fa-arrow-right ms-2"></i></button>
+                <button id="submit-btn" class="btn btn-success px-3 px-md-5 d-none shadow" onclick="finishExam()">Submit Final Answers</button>
             </div>
         </div>
 
-        <div id="result-area" class="text-center d-none py-5">
-            <div class="mb-4">
-                <i class="fas fa-award fa-5x text-warning"></i>
+        <div id="result-area" class="text-center d-none py-4">
+            <div class="mb-3">
+                <i class="fas fa-award fa-4x text-warning"></i>
             </div>
-            <h1 class="fw-bold">Assessment Complete</h1>
-            <h2 class="display-5 text-primary mb-4">Score: <span id="final-score">0</span> / 50</h2>
+            <h1 class="fw-bold h2">Assessment Complete</h1>
+            <h2 class="display-6 text-primary mb-4">Score: <span id="final-score">0</span> / 50</h2>
             <div class="card mx-auto mb-4 border-0 bg-light" style="max-width: 500px;">
                 <div class="card-body">
-                    <p class="mb-3">Your examination has been recorded and submitted to the CCS portal.</p>
-                    <button class="btn btn-dark btn-lg w-100 mb-2" onclick="generatePDF()">
+                    <p class="mb-3 small">Your examination has been recorded and submitted to the CCS portal.</p>
+                    <button class="btn btn-dark btn-md w-100 mb-2" onclick="generatePDF()">
                         <i class="fas fa-file-pdf me-2"></i>Generate Official Certificate
                     </button>
                 </div>
             </div>
-            <p class="text-muted small">Please wait for the screen recording download to complete before closing.</p>
+            <p class="text-muted small">Please wait for the recording download before closing.</p>
         </div>
     </div>
 
@@ -88,10 +157,10 @@
             <span class="badge bg-primary">CCS PROCTOR</span>
         </div>
         <video id="webcam" autoplay muted playsinline></video>
-        <h6 class="mt-4 small fw-bold text-uppercase text-muted border-bottom pb-2">Activity Stream</h6>
+        <h6 class="mt-3 small fw-bold text-uppercase text-muted border-bottom pb-2">Activity Stream</h6>
         <div class="log-box" id="audit-logs"></div>
         <div class="mt-3 text-center">
-            <small class="text-muted">SirLavz2026 | LU-CCS</small>
+            <small class="text-muted" style="font-size: 0.7rem;">SirLavz2026 | LU-CCS</small>
         </div>
     </div>
 </div>
@@ -191,7 +260,6 @@ async function startSecureExam() {
         showQuestion();
         setInterval(monitorFace, 5000);
         
-        // Log Start
         logEvent("Session Initiated");
     } catch { alert("Permissions for Camera and Screen Share are mandatory."); }
 }
@@ -258,7 +326,7 @@ function downloadVideo() {
     a.href = url; a.download = `LU_Exam_${Date.now()}.webm`; a.click();
 }
 
-// --- FORMAL CERTIFICATE GENERATION ---
+// --- CERTIFICATE GENERATION ---
 function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -268,8 +336,8 @@ function generatePDF() {
 
     const footerText = "SirLavz2026 | CS 2206 - Midterm Examination | CCS | Laguna University";
 
-    // --- PAGE 1: FORMAL CERTIFICATE ---
-    doc.setDrawColor(0, 74, 153); // Blue Border
+    // P1: Certificate
+    doc.setDrawColor(0, 74, 153);
     doc.setLineWidth(1.5);
     doc.rect(10, 10, 190, 277, 'S'); 
     
@@ -316,15 +384,13 @@ function generatePDF() {
     doc.text("Instructor:", 60, 220);
     doc.setFont("times", "bold");
     doc.text("RONALD T. LAVA, MSIT", 60, 226);
-    doc.line(60, 227, 110, 227);
 
-    // Footer P1
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(150);
     doc.text(footerText, 105, 282, null, null, "center");
 
-    // --- PAGE 2: EXAM CONTENT REVIEW ---
+    // P2: Report
     doc.addPage();
     doc.setTextColor(0);
     doc.setFontSize(16);
@@ -352,10 +418,6 @@ function generatePDF() {
         alternateRowStyles: { fillColor: [245, 245, 245] },
         columnStyles: { 1: { cellWidth: 80 } }
     });
-
-    // Footer P2
-    doc.setFontSize(8);
-    doc.text(footerText, 105, 290, null, null, "center");
 
     doc.save(`${name}_CS2206_Midterm.pdf`);
 }
