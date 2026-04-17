@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,55 +11,54 @@
     
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; -webkit-user-select: none; }
-        .main-container { padding: 15px; max-width: 800px; margin: auto; }
-        .quiz-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1); background: white; padding: 25px; min-height: 400px; }
-        .header-accent { border-top: 5px solid #004a99; border-radius: 15px 15px 0 0; }
-        
-        .option-btn { text-align: left; margin-bottom: 12px; border: 2px solid #edf2f7; transition: 0.2s; padding: 15px; width: 100%; background: white; border-radius: 12px; display: flex; align-items: center; }
+        .main-container { padding: 15px; max-width: 900px; margin: auto; display: flex; flex-direction: column; gap: 15px; }
+        .status-panel { background: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #004a99; transition: all 0.3s ease; }
+        .violation-active { border-left-color: #dc3545; background: #fff5f5; animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(5px); } 50% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .quiz-card { border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.05); background: white; padding: 25px; }
+        .option-btn { text-align: left; margin-bottom: 12px; border: 2px solid #edf2f7; padding: 15px; width: 100%; background: white; border-radius: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; }
+        .option-btn:hover { border-color: #004a99; background: #f8fbff; }
         .selected-opt { background-color: #e6f0ff !important; border-color: #004a99 !important; color: #004a99 !important; font-weight: 600; }
-
-        #violation-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); color: white; z-index: 10001;
-            justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 30px;
-        }
+        #violation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(220, 53, 69, 0.98); color: white; z-index: 10001; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 30px; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
 <div id="violation-overlay">
-    <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
-    <h2 class="fw-bold">SECURITY BREACH</h2>
-    <p class="lead">Tab switching or leaving this window is strictly prohibited.</p>
-    <p>This incident has been logged. Continuous violations will void your exam.</p>
-    <button class="btn btn-danger btn-lg px-5 mt-3" onclick="closeViolation()">RETURN TO EXAM</button>
+    <i class="fas fa-user-shield fa-5x mb-4"></i>
+    <h1 class="fw-bold">VIOLATION DETECTED</h1>
+    <p class="lead">Leaving the exam window is strictly prohibited.</p>
+    <div class="bg-white text-dark p-3 rounded mb-4"><strong>Total Violations: <span id="overlay-count">0</span></strong></div>
+    <button class="btn btn-light btn-lg px-5 fw-bold" onclick="closeViolation()">RETURN TO EXAM</button>
 </div>
 
 <div class="main-container">
-    <div class="card quiz-card header-accent">
+    <div id="realtime-status" class="status-panel d-none">
+        <div class="d-flex justify-content-between align-items-center">
+            <div><span class="fw-bold text-primary"><i class="fas fa-shield-alt me-1"></i> Session Active</span></div>
+            <div class="text-end"><small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">VIOLATIONS</small><span id="live-violation-count" class="badge bg-success fs-6">0</span></div>
+        </div>
+    </div>
+
+    <div class="card quiz-card">
         <div id="setup-screen" class="text-center py-4">
             <h2 class="fw-bold">Laguna University</h2>
-            <p class="text-muted">College of Computer Studies</p>
-            <div class="p-4 border rounded bg-light shadow-sm">
-                <p class="small fw-bold text-primary mb-3">CS 2206: DATABASE MANAGEMENT SYSTEM</p>
+            <p class="text-muted">CS 2206 Secure Portal</p>
+            <div class="p-4 border rounded bg-light">
                 <input type="text" id="student-name" class="form-control mb-3" placeholder="Full Name">
-                <input type="text" id="student-id" class="form-control mb-4" placeholder="Student ID Number">
+                <input type="text" id="student-id" class="form-control mb-4" placeholder="Student ID">
                 <button class="btn btn-primary btn-lg w-100" onclick="startExam()">Start Examination</button>
             </div>
         </div>
 
         <div id="exam-area" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <span id="progress-text" class="badge bg-dark px-3 py-2">Question 1/50</span>
-                <span id="violation-badge" class="badge bg-danger d-none">Violation Logged</span>
+            <div class="d-flex justify-content-between mb-3">
+                <span id="progress-text" class="badge bg-dark">Question 1/50</span>
             </div>
-            <div class="progress mb-4" style="height: 6px;"><div id="progress-bar" class="progress-bar bg-primary" style="width: 2%"></div></div>
-            
             <div id="quiz-content">
                 <h4 id="question-text" class="mb-4 fw-bold">...</h4>
                 <div id="options-container"></div>
             </div>
-
             <div class="d-flex justify-content-between mt-5 pt-3 border-top">
                 <button class="btn btn-outline-secondary invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
                 <button id="next-btn" class="btn btn-primary px-4" onclick="nextQuestion()">Next</button>
@@ -68,105 +67,115 @@
         </div>
 
         <div id="result-area" class="text-center d-none py-4">
-            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
-            <h2 class="fw-bold">Exam Submitted</h2>
-            <h3 class="text-primary mb-4">Score: <span id="final-score">0</span> / 50</h3>
-            <button class="btn btn-dark btn-lg w-100 mb-3" onclick="generatePDF()">
-                <i class="fas fa-file-pdf me-2"></i>Download Certificate & Report
-            </button>
+            <h2 class="fw-bold">Assessment Complete</h2>
+            <div class="display-3 text-primary my-3"><span id="final-score">0</span>/50</div>
+            <button class="btn btn-dark btn-lg w-100" onclick="generatePDF()">Download Result PDF</button>
         </div>
     </div>
 </div>
 
 <script>
-const quizData = [
-    { q: "Which version of MySQL first introduced stored procedures?", o: ["Version 4.1", "Version 5.0", "Version 5.1", "Version 8.0"], a: 1 },
-    { q: "A stored procedure is defined as a collection of:", o: ["Java classes", "SQL statements used together", "PHP scripts", "HTML tags"], a: 1 },
-    { q: "Which SQL standard did MySQL implement for stored procedures?", o: ["SQL:1992", "SQL:1999", "SQL:2003", "SQL:2008"], a: 2 },
-    { q: "What is a primary advantage of stored procedures regarding network traffic?", o: ["Increase trips to DB", "Encrypt data", "Reduce traffic by combining queries", "Disable network"], a: 2 },
-    { q: "How do stored procedures improve security?", o: ["Require root password", "Prevent SQL injection via parameters", "Hide DB from internet", "Delete data after reading"], a: 1 },
-    { q: "Where does MySQL store stored procedure data?", o: ["information_schema", "mysql.proc table", "Flat file", "performance_schema"], a: 1 },
-    { q: "Maximum length for a stored procedure name?", o: ["32 chars", "64 chars", "128 chars", "256 chars"], a: 1 },
-    { q: "Why change the DELIMITER in the MySQL client?", o: ["Speed", "Allow semicolons inside code", "Encryption", "End of procedure"], a: 1 },
-    { q: "Which parameter type is the default?", o: ["OUT", "INOUT", "IN", "GLOBAL"], a: 2 },
-    { q: "What is the function of an OUT parameter?", o: ["Pass data in", "Set in procedure/accessed by caller", "Terminate procedure", "Print results"], a: 1 },
-    { q: "Which characteristic determines execution permissions?", o: ["LANGUAGE", "COMMENT", "SQL SECURITY", "DETERMINISTIC"], a: 2 },
-    { q: "If SQL SECURITY is INVOKER, it runs with privileges of:", o: ["Creator", "Root", "The user calling it", "Anonymous"], a: 2 },
-    { q: "Order of DECLARE statements in BEGIN...END?", o: ["Cursors, Handlers, Vars", "Handlers, Cursors, Vars", "Vars, Cursors, Handlers", "Vars, Handlers, Cursors"], a: 2 },
-    { q: "Which statement executes a stored procedure?", o: ["RUN", "EXECUTE", "CALL", "START"], a: 2 },
-    { q: "Which flow control is NOT supported by MySQL?", o: ["IF", "WHILE", "FOR", "LOOP"], a: 2 },
-    { q: "Command to see procedure source code?", o: ["SHOW STATUS", "DESCRIBE", "SHOW CREATE PROCEDURE", "SELECT *"], a: 2 },
-    { q: "Permission needed to run a procedure?", o: ["SELECT", "CREATE ROUTINE", "EXECUTE", "ALTER"], a: 2 },
-    { q: "Creating a procedure with no database selected results in:", o: ["Random DB", "Error", "Auto-create", "Test DB"], a: 1 },
-    { q: "What is 'Encapsulation' in procedures?", o: ["Smaller DB", "Black box usage", "Prevents changes", "Auto-backup"], a: 1 },
-    { q: "True or False: Stored procedures are independent of the storage engine.", o: ["True", "False"], a: 0 },
-    { q: "Difference between stored function and procedure?", o: ["Procedures are faster", "Functions return a value/use in expressions", "Functions can't touch tables", "One statement only"], a: 1 },
-    { q: "Keyword to send a value back from a function?", o: ["OUTPUT", "SEND", "RETURN", "RESULT"], a: 2 },
-    { q: "What is a 'Trigger'?", o: ["Server reboot", "Automatic object on table modification", "Scheduled task", "Delete command"], a: 1 },
-    { q: "Triggers activate on which three statements?", o: ["SELECT, INSERT, UPDATE", "CREATE, ALTER, DROP", "INSERT, UPDATE, DELETE", "GRANT, REVOKE"], a: 2 },
-    { q: "Trigger timing options?", o: ["BEFORE/AFTER", "DURING/AFTER", "START/END", "FAST/SLOW"], a: 0 },
-    { q: "MySQL 'Event' is similar to:", o: ["grep", "cron", "bash", "ls"], a: 1 },
-    { q: "Purpose of an Event?", o: ["Log logins", "Execute SQL on a schedule", "Prevent deletion", "Speed up SELECT"], a: 1 },
-    { q: "Where to check Event activity?", o: ["Browser", "Error log", "information_schema", "event_log"], a: 2 },
-    { q: "Clause indicating a function only reads data?", o: ["NO SQL", "READS SQL DATA", "MODIFIES SQL DATA", "DETERMINISTIC"], a: 1 },
-    { q: "How many RETURN statements must a function have?", o: ["0", "At least 1", "Exactly 2", "Max 5"], a: 1 },
-    { q: "True or False: A trigger can log table changes.", o: ["True", "False"], a: 0 },
-    { q: "BEGIN...END block forms what?", o: ["Simple statement", "Compound statement", "Comment", "Table"], a: 1 },
-    { q: "Trigger keyword for value before update?", o: ["PREVIOUS", "OLD", "NEW", "BEFORE"], a: 1 },
-    { q: "Trigger keyword for value after update?", o: ["RECENT", "OLD", "NEW", "AFTER"], a: 2 },
-    { q: "Statement to choose between blocks based on value?", o: ["LOOP", "CASE", "WHILE", "REPEAT"], a: 1 },
-    { q: "What is a database cursor?", o: ["Text editor line", "Pointer to result set record", "Duplicate tool", "Security bypass"], a: 1 },
-    { q: "Which version introduced Cursors?", o: ["4.0", "5.0", "5.5", "8.0"], a: 1 },
-    { q: "MySQL supports which cursor type?", o: ["Client-side", "Server-side", "Bi-directional", "Write-only"], a: 1 },
-    { q: "What does 'forward-only' mean for cursors?", o: ["New tables only", "Forward/Backward", "One record at a time forward", "Skip records"], a: 2 },
-    { q: "What is an 'asensitive' cursor?", o: ["Points to temp copy", "Points at real data", "Ignores case", "Emotional"], a: 1 },
-    { q: "Main drawback of asensitive cursors?", o: ["Slow", "Memory heavy", "Data changes affect cursor", "10 row limit"], a: 2 },
-    { q: "MySQL cursors are:", o: ["Read-only", "Read-write", "Write-only", "Append-only"], a: 0 },
-    { q: "Statement to move cursor and get data?", o: ["OPEN", "NEXT", "FETCH", "MOVE"], a: 2 },
-    { q: "Correct sequence for cursor use?", o: ["OPEN, FETCH, CLOSE, DECLARE", "DECLARE, OPEN, FETCH, CLOSE", "FETCH, OPEN, DECLARE, CLOSE", "DECLARE, FETCH, OPEN, CLOSE"], a: 1 },
-    { q: "Handler condition to detect end of results?", o: ["NOT FOUND", "SQLERROR", "FINISHED", "EXIT"], a: 0 },
-    { q: "What must you do when finished with a cursor?", o: ["DELETE", "CLOSE", "COMMIT", "DROP"], a: 1 },
-    { q: "How many records does a cursor FETCH at once?", o: ["All", "Two", "One", "Half"], a: 2 },
-    { q: "To restart a MySQL cursor, you must:", o: ["Use PREVIOUS", "Close and reopen", "Use RESTART", "Cannot restart"], a: 1 },
-    { q: "Where can cursors be used?", o: ["Client only", "Stored routines only", "Standard SELECT", "HTML forms"], a: 1 },
-    { q: "Purpose of DECLARE CONTINUE HANDLER for cursors?", o: ["Start service", "Handle end of data", "Skip errors", "Close connection"], a: 1 }
-].sort(() => Math.random() - 0.5);
+const rawQuestions = [
+    { q: "Which version of MySQL first introduced stored procedures?", o: ["Version 4.1", "Version 5.0", "Version 5.1", "Version 8.0"], a: "Version 5.0" },
+    { q: "A stored procedure is defined as a collection of:", o: ["Java classes", "SQL statements used together", "PHP scripts", "HTML tags"], a: "SQL statements used together" },
+    { q: "Which SQL standard did MySQL implement for stored procedures?", o: ["SQL:1992", "SQL:1999", "SQL:2003", "SQL:2008"], a: "SQL:2003" },
+    { q: "What is a primary advantage of stored procedures regarding network traffic?", o: ["Increase trips to DB", "Encrypt data", "Reduce traffic by combining queries", "Disable network"], a: "Reduce traffic by combining queries" },
+    { q: "How do stored procedures improve security?", o: ["Require root password", "Prevent SQL injection via parameters", "Hide DB from internet", "Delete data after reading"], a: "Prevent SQL injection via parameters" },
+    { q: "Where does MySQL store stored procedure data?", o: ["information_schema", "mysql.proc table", "Flat file", "performance_schema"], a: "mysql.proc table" },
+    { q: "Maximum length for a stored procedure name?", o: ["32 chars", "64 chars", "128 chars", "256 chars"], a: "64 chars" },
+    { q: "Why change the DELIMITER in the MySQL client?", o: ["Speed", "Allow semicolons inside code", "Encryption", "End of procedure"], a: "Allow semicolons inside code" },
+    { q: "Which parameter type is the default?", o: ["OUT", "INOUT", "IN", "GLOBAL"], a: "IN" },
+    { q: "What is the function of an OUT parameter?", o: ["Pass data in", "Set in procedure/accessed by caller", "Terminate procedure", "Print results"], a: "Set in procedure/accessed by caller" },
+    { q: "Which characteristic determines execution permissions?", o: ["LANGUAGE", "COMMENT", "SQL SECURITY", "DETERMINISTIC"], a: "SQL SECURITY" },
+    { q: "If SQL SECURITY is INVOKER, it runs with privileges of:", o: ["Creator", "Root", "The user calling it", "Anonymous"], a: "The user calling it" },
+    { q: "Order of DECLARE statements in BEGIN...END?", o: ["Cursors, Handlers, Vars", "Handlers, Cursors, Vars", "Vars, Cursors, Handlers", "Vars, Handlers, Cursors"], a: "Vars, Cursors, Handlers" },
+    { q: "Which statement executes a stored procedure?", o: ["RUN", "EXECUTE", "CALL", "START"], a: "CALL" },
+    { q: "Which flow control is NOT supported by MySQL?", o: ["IF", "WHILE", "FOR", "LOOP"], a: "FOR" },
+    { q: "Command to see procedure source code?", o: ["SHOW STATUS", "DESCRIBE", "SHOW CREATE PROCEDURE", "SELECT *"], a: "SHOW CREATE PROCEDURE" },
+    { q: "Permission needed to run a procedure?", o: ["SELECT", "CREATE ROUTINE", "EXECUTE", "ALTER"], a: "EXECUTE" },
+    { q: "Creating a procedure with no database selected results in:", o: ["Random DB", "Error", "Auto-create", "Test DB"], a: "Error" },
+    { q: "What is 'Encapsulation' in procedures?", o: ["Smaller DB", "Black box usage", "Prevents changes", "Auto-backup"], a: "Black box usage" },
+    { q: "True or False: Stored procedures are independent of the storage engine.", o: ["True", "False"], a: "True" },
+    { q: "Difference between stored function and procedure?", o: ["Procedures are faster", "Functions return a value/use in expressions", "Functions can't touch tables", "One statement only"], a: "Functions return a value/use in expressions" },
+    { q: "Keyword to send a value back from a function?", o: ["OUTPUT", "SEND", "RETURN", "RESULT"], a: "RETURN" },
+    { q: "What is a 'Trigger'?", o: ["Server reboot", "Automatic object on table modification", "Scheduled task", "Delete command"], a: "Automatic object on table modification" },
+    { q: "Triggers activate on which three statements?", o: ["SELECT, INSERT, UPDATE", "CREATE, ALTER, DROP", "INSERT, UPDATE, DELETE", "GRANT, REVOKE"], a: "INSERT, UPDATE, DELETE" },
+    { q: "Trigger timing options?", o: ["BEFORE/AFTER", "DURING/AFTER", "START/END", "FAST/SLOW"], a: "BEFORE/AFTER" },
+    { q: "MySQL 'Event' is similar to:", o: ["grep", "cron", "bash", "ls"], a: "cron" },
+    { q: "Purpose of an Event?", o: ["Log logins", "Execute SQL on a schedule", "Prevent deletion", "Speed up SELECT"], a: "Execute SQL on a schedule" },
+    { q: "Where to check Event activity?", o: ["Browser", "Error log", "information_schema", "event_log"], a: "information_schema" },
+    { q: "Clause indicating a function only reads data?", o: ["NO SQL", "READS SQL DATA", "MODIFIES SQL DATA", "DETERMINISTIC"], a: "READS SQL DATA" },
+    { q: "How many RETURN statements must a function have?", o: ["0", "At least 1", "Exactly 2", "Max 5"], a: "At least 1" },
+    { q: "True or False: A trigger can log table changes.", o: ["True", "False"], a: "True" },
+    { q: "BEGIN...END block forms what?", o: ["Simple statement", "Compound statement", "Comment", "Table"], a: "Compound statement" },
+    { q: "Trigger keyword for value before update?", o: ["PREVIOUS", "OLD", "NEW", "BEFORE"], a: "OLD" },
+    { q: "Trigger keyword for value after update?", o: ["RECENT", "OLD", "NEW", "AFTER"], a: "NEW" },
+    { q: "Statement to choose between blocks based on value?", o: ["LOOP", "CASE", "WHILE", "REPEAT"], a: "CASE" },
+    { q: "What is a database cursor?", o: ["Text editor line", "Pointer to result set record", "Duplicate tool", "Security bypass"], a: "Pointer to result set record" },
+    { q: "Which version introduced Cursors?", o: ["4.0", "5.0", "5.5", "8.0"], a: "5.0" },
+    { q: "MySQL supports which cursor type?", o: ["Client-side", "Server-side", "Bi-directional", "Write-only"], a: "Server-side" },
+    { q: "What does 'forward-only' mean for cursors?", o: ["New tables only", "Forward/Backward", "One record at a time forward", "Skip records"], a: "One record at a time forward" },
+    { q: "What is an 'asensitive' cursor?", o: ["Points to temp copy", "Points at real data", "Ignores case", "Emotional"], a: "Points at real data" },
+    { q: "Main drawback of asensitive cursors?", o: ["Slow", "Memory heavy", "Data changes affect cursor", "10 row limit"], a: "Data changes affect cursor" },
+    { q: "MySQL cursors are:", o: ["Read-only", "Read-write", "Write-only", "Append-only"], a: "Read-only" },
+    { q: "Statement to move cursor and get data?", o: ["OPEN", "NEXT", "FETCH", "MOVE"], a: "FETCH" },
+    { q: "Correct sequence for cursor use?", o: ["OPEN, FETCH, CLOSE, DECLARE", "DECLARE, OPEN, FETCH, CLOSE", "FETCH, OPEN, DECLARE, CLOSE", "DECLARE, FETCH, OPEN, CLOSE"], a: "DECLARE, OPEN, FETCH, CLOSE" },
+    { q: "Handler condition to detect end of results?", o: ["NOT FOUND", "SQLERROR", "FINISHED", "EXIT"], a: "NOT FOUND" },
+    { q: "What must you do when finished with a cursor?", o: ["DELETE", "CLOSE", "COMMIT", "DROP"], a: "CLOSE" },
+    { q: "How many records does a cursor FETCH at once?", o: ["All", "Two", "One", "Half"], a: "One" },
+    { q: "To restart a MySQL cursor, you must:", o: ["Use PREVIOUS", "Close and reopen", "Use RESTART", "Cannot restart"], a: "Close and reopen" },
+    { q: "Where can cursors be used?", o: ["Client only", "Stored routines only", "Standard SELECT", "HTML forms"], a: "Stored routines only" },
+    { q: "Purpose of DECLARE CONTINUE HANDLER for cursors?", o: ["Start service", "Handle end of data", "Skip errors", "Close connection"], a: "Handle end of data" }
+];
 
-let currentIdx = 0, userAnswers = new Array(quizData.length).fill(null);
+let quizData = [];
+let currentIdx = 0, userAnswers = [];
 let isExamActive = false, violations = 0;
 
+function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
 function startExam() {
-    const n = document.getElementById('student-name').value;
-    const s = document.getElementById('student-id').value;
-    if(!n || !s) return alert("Fill in your details.");
+    if(!document.getElementById('student-name').value) return alert("Enter Name");
     
+    // Shuffle Questions AND Shuffle Answers inside each question
+    quizData = shuffle([...rawQuestions]).map(item => {
+        return {
+            q: item.q,
+            o: shuffle([...item.o]),
+            correctText: item.a
+        };
+    });
+    
+    userAnswers = new Array(quizData.length).fill(null);
     document.getElementById('setup-screen').classList.add('d-none');
     document.getElementById('exam-area').classList.remove('d-none');
+    document.getElementById('realtime-status').classList.remove('d-none');
     isExamActive = true;
     showQuestion();
 }
 
-// Tab Switching Detection
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden && isExamActive) {
-        violations++;
-        document.getElementById('violation-badge').classList.remove('d-none');
-        document.getElementById('violation-overlay').style.display = 'flex';
-    }
-});
+function recordViolation() {
+    if (!isExamActive) return;
+    violations++;
+    document.getElementById('live-violation-count').innerText = violations;
+    document.getElementById('live-violation-count').className = "badge bg-danger fs-6";
+    document.getElementById('overlay-count').innerText = violations;
+    document.getElementById('violation-overlay').style.display = 'flex';
+}
 
+document.addEventListener("visibilitychange", () => { if (document.hidden) recordViolation(); });
+window.onblur = () => { recordViolation(); };
 function closeViolation() { document.getElementById('violation-overlay').style.display = 'none'; }
 
 function showQuestion() {
     const q = quizData[currentIdx];
     document.getElementById('question-text').innerText = `${currentIdx + 1}. ${q.q}`;
     document.getElementById('progress-text').innerText = `Question ${currentIdx + 1}/50`;
-    document.getElementById('progress-bar').style.width = `${((currentIdx + 1)/50)*100}%`;
     
     const container = document.getElementById('options-container');
     container.innerHTML = '';
     q.o.forEach((opt, i) => {
-        const btn = document.createElement('button');
+        const btn = document.createElement('div');
         btn.className = `option-btn ${userAnswers[currentIdx] === i ? 'selected-opt' : ''}`;
         btn.innerHTML = `<span class="badge bg-light text-dark me-3">${String.fromCharCode(65+i)}</span> ${opt}`;
         btn.onclick = () => { userAnswers[currentIdx] = i; showQuestion(); };
@@ -183,10 +192,11 @@ function nextQuestion() { currentIdx++; showQuestion(); window.scrollTo(0,0); }
 function prevQuestion() { currentIdx--; showQuestion(); window.scrollTo(0,0); }
 
 function finishExam() {
-    if(!confirm("Submit final answers?")) return;
     isExamActive = false;
     let score = 0;
-    userAnswers.forEach((ans, i) => { if(ans === quizData[i].a) score++; });
+    quizData.forEach((q, i) => {
+        if(userAnswers[i] !== null && q.o[userAnswers[i]] === q.correctText) score++;
+    });
     document.getElementById('exam-area').classList.add('d-none');
     document.getElementById('result-area').classList.remove('d-none');
     document.getElementById('final-score').innerText = score;
@@ -196,32 +206,10 @@ function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const name = document.getElementById('student-name').value;
-    const score = document.getElementById('final-score').innerText;
-
-    // Design Certificate
-    doc.setFont("times", "bold");
-    doc.setFontSize(22);
-    doc.text("LAGUNA UNIVERSITY", 105, 40, null, null, "center");
-    doc.setFontSize(14);
-    doc.text("Certificate of Completion", 105, 60, null, null, "center");
-    
-    doc.setFontSize(18);
-    doc.text(name.toUpperCase(), 105, 90, null, null, "center");
-    doc.setFontSize(12);
-    doc.text(`Subject: CS 2206 - Database Management`, 105, 100, null, null, "center");
-    doc.text(`Final Score: ${score} / 50`, 105, 110, null, null, "center");
-    doc.text(`Security Violations: ${violations}`, 105, 120, null, null, "center");
-
-    doc.addPage();
-    doc.text("Detailed Response Log", 14, 20);
-    const tableBody = quizData.map((q, i) => [i+1, q.q, q.o[q.a], userAnswers[i] !== null ? q.o[userAnswers[i]] : "N/A"]);
-    doc.autoTable({
-        startY: 30,
-        head: [['#', 'Question', 'Correct', 'Response']],
-        body: tableBody,
-        styles: { fontSize: 8 }
-    });
-    
+    doc.text("LAGUNA UNIVERSITY EXAM REPORT", 10, 20);
+    doc.text(`Student: ${name}`, 10, 30);
+    doc.text(`Score: ${document.getElementById('final-score').innerText} / 50`, 10, 40);
+    doc.text(`Violations: ${violations}`, 10, 50);
     doc.save(`${name}_Result.pdf`);
 }
 </script>
