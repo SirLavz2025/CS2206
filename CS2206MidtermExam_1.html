@@ -16,7 +16,6 @@
         .status-panel { 
             background: #fff; border-radius: 12px; padding: 15px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #004a99; 
-            transition: all 0.3s ease; 
         }
         
         .violation-active { border-left-color: #dc3545; background: #fff5f5; animation: shake 0.5s; }
@@ -44,9 +43,9 @@
 <div id="violation-overlay">
     <i class="fas fa-user-shield fa-5x mb-4"></i>
     <h1 class="fw-bold">VIOLATION DETECTED</h1>
-    <p class="lead">Leaving the examination window is strictly recorded.</p>
+    <p class="lead">Unauthorized window change detected.</p>
     <div class="bg-white text-dark p-3 rounded mb-4">
-        <strong style="font-size: 1.5rem;">Total Violations: <span id="overlay-count">0</span></strong>
+        <strong style="font-size: 1.5rem;">Current Violations: <span id="overlay-count">0</span></strong>
     </div>
     <button class="btn btn-light btn-lg px-5 fw-bold" onclick="closeViolation()">RETURN TO EXAM</button>
 </div>
@@ -54,9 +53,9 @@
 <div class="main-container">
     <div id="realtime-status" class="status-panel d-none">
         <div class="d-flex justify-content-between align-items-center">
-            <div><span class="fw-bold text-primary"><i class="fas fa-shield-alt me-1"></i> Security Monitoring Active</span></div>
+            <div><span class="fw-bold text-primary"><i class="fas fa-shield-alt me-1"></i> Secure Session Active</span></div>
             <div class="text-end">
-                <small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">VIOLATIONS</small>
+                <small class="text-muted d-block fw-bold" style="font-size: 0.7rem;">TOTAL VIOLATIONS</small>
                 <span id="live-violation-count" class="badge bg-success fs-6">0</span>
             </div>
         </div>
@@ -67,33 +66,33 @@
             <h2 class="fw-bold">Laguna University</h2>
             <p class="text-muted">CS 2206: Database Management System</p>
             <div class="p-4 border rounded bg-light">
-                <input type="text" id="student-name" class="form-control mb-3" placeholder="Full Name (Last, First)">
+                <input type="text" id="student-name" class="form-control mb-3" placeholder="Full Name">
                 <input type="text" id="student-id" class="form-control mb-4" placeholder="Student ID Number">
-                <button class="btn btn-primary btn-lg w-100" onclick="startExam()">Start Examination</button>
+                <button class="btn btn-primary btn-lg w-100" onclick="startExam()">Enter Examination</button>
             </div>
         </div>
 
         <div id="exam-area" class="d-none">
             <div class="d-flex justify-content-between mb-3">
                 <span id="progress-text" class="badge bg-dark">Question 1/50</span>
-                <span class="text-muted small"><i class="fas fa-lock"></i> Secure Environment</span>
+                <span class="text-muted small"><i class="fas fa-lock text-success"></i> Secured</span>
             </div>
             <div id="quiz-content">
-                <h4 id="question-text" class="mb-4 fw-bold text-dark">...</h4>
+                <h4 id="question-text" class="mb-4 fw-bold">...</h4>
                 <div id="options-container"></div>
             </div>
             <div class="d-flex justify-content-between mt-5 pt-3 border-top">
                 <button class="btn btn-outline-secondary invisible" id="prev-btn" onclick="prevQuestion()">Back</button>
                 <button id="next-btn" class="btn btn-primary px-4" onclick="nextQuestion()">Next</button>
-                <button id="submit-btn" class="btn btn-success px-4 d-none" onclick="finishExam()">Submit Final Answers</button>
+                <button id="submit-btn" class="btn btn-success px-4 d-none" onclick="finishExam()">Submit Exam</button>
             </div>
         </div>
 
         <div id="result-area" class="text-center d-none py-4">
-            <h2 class="fw-bold">Examination Complete</h2>
+            <h2 class="fw-bold text-success">Submission Successful</h2>
             <div class="display-3 text-primary my-3"><span id="final-score">0</span>/50</div>
-            <div class="alert alert-secondary py-2" id="final-violation-msg">Violations: 0</div>
-            <button class="btn btn-dark btn-lg w-100 mt-2" onclick="generatePDF()">Download Result & Certificate</button>
+            <div class="alert alert-danger py-2" id="final-violation-msg">Security Violations: 0</div>
+            <button class="btn btn-dark btn-lg w-100 mt-2" onclick="generatePDF()">Print Result PDF</button>
         </div>
     </div>
 </div>
@@ -155,19 +154,15 @@ const rawQuestions = [
 let quizData = [];
 let currentIdx = 0, userAnswers = [];
 let isExamActive = false, violations = 0;
+let violationLocked = false; // Cooldown for strict 1-count logic
 
 function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
 
 function startExam() {
     if(!document.getElementById('student-name').value) return alert("Please enter your name.");
     
-    // Randomize Questions and Answers
     quizData = shuffle([...rawQuestions]).map(item => {
-        return {
-            q: item.q,
-            o: shuffle([...item.o]),
-            correctText: item.a
-        };
+        return { q: item.q, o: shuffle([...item.o]), correctText: item.a };
     });
     
     userAnswers = new Array(quizData.length).fill(null);
@@ -178,33 +173,30 @@ function startExam() {
     showQuestion();
 }
 
-// REAL-TIME VIOLATION HANDLER (Increment by 1)
 function handleViolation() {
-    if (!isExamActive) return;
+    if (!isExamActive || violationLocked) return;
     
-    violations += 1; // Explicitly add 1
+    violationLocked = true; // Lock the counter
+    violations += 1;
     
-    const badge = document.getElementById('live-violation-count');
-    badge.innerText = violations;
-    badge.className = "badge bg-danger fs-6";
-    
-    const panel = document.getElementById('realtime-status');
-    panel.classList.add('violation-active');
-    setTimeout(() => panel.classList.remove('violation-active'), 800);
-
+    document.getElementById('live-violation-count').innerText = violations;
+    document.getElementById('live-violation-count').className = "badge bg-danger fs-6";
     document.getElementById('overlay-count').innerText = violations;
     document.getElementById('violation-overlay').style.display = 'flex';
 }
 
+function closeViolation() { 
+    document.getElementById('violation-overlay').style.display = 'none';
+    setTimeout(() => { violationLocked = false; }, 500); // Small buffer before detecting next violation
+}
+
 document.addEventListener("visibilitychange", () => { if (document.hidden) handleViolation(); });
 window.onblur = () => { handleViolation(); };
-function closeViolation() { document.getElementById('violation-overlay').style.display = 'none'; }
 
 function showQuestion() {
     const q = quizData[currentIdx];
     document.getElementById('question-text').innerText = `${currentIdx + 1}. ${q.q}`;
     document.getElementById('progress-text').innerText = `Question ${currentIdx + 1}/50`;
-    
     const container = document.getElementById('options-container');
     container.innerHTML = '';
     q.o.forEach((opt, i) => {
@@ -214,7 +206,6 @@ function showQuestion() {
         btn.onclick = () => { userAnswers[currentIdx] = i; showQuestion(); };
         container.appendChild(btn);
     });
-
     document.getElementById('prev-btn').classList.toggle('invisible', currentIdx === 0);
     const isLast = currentIdx === quizData.length - 1;
     document.getElementById('next-btn').classList.toggle('d-none', isLast);
@@ -227,15 +218,12 @@ function prevQuestion() { currentIdx--; showQuestion(); window.scrollTo(0,0); }
 function finishExam() {
     isExamActive = false;
     let score = 0;
-    quizData.forEach((q, i) => {
-        if(userAnswers[i] !== null && q.o[userAnswers[i]] === q.correctText) score++;
-    });
-    
+    quizData.forEach((q, i) => { if(userAnswers[i] !== null && q.o[userAnswers[i]] === q.correctText) score++; });
     document.getElementById('exam-area').classList.add('d-none');
     document.getElementById('realtime-status').classList.add('d-none');
     document.getElementById('result-area').classList.remove('d-none');
     document.getElementById('final-score').innerText = score;
-    document.getElementById('final-violation-msg').innerText = `Total Security Violations: ${violations}`;
+    document.getElementById('final-violation-msg').innerText = `Security Violations Logged: ${violations}`;
 }
 
 function generatePDF() {
@@ -246,41 +234,37 @@ function generatePDF() {
     const score = document.getElementById('final-score').innerText;
 
     doc.setFont("times", "bold");
-    doc.text("LAGUNA UNIVERSITY", 105, 20, null, null, "center");
-    doc.text("COLLEGE OF COMPUTER STUDIES", 105, 28, null, null, "center");
-    
+    doc.text("LAGUNA UNIVERSITY - CCS", 105, 20, null, null, "center");
     doc.line(20, 35, 190, 35);
     
-    doc.setFontSize(18);
-    doc.text("OFFICIAL EXAM RESULT", 105, 50, null, null, "center");
+    doc.setFontSize(14);
+    doc.text(`EXAMINATION SUMMARY`, 105, 50, null, null, "center");
     
     doc.setFontSize(12);
     doc.setFont("times", "normal");
-    doc.text(`Student Name: ${name.toUpperCase()}`, 20, 70);
-    doc.text(`Student ID: ${sid}`, 20, 78);
-    doc.text(`Subject: CS 2206 - Database Management`, 20, 86);
-    doc.text(`Final Score: ${score} / 50`, 20, 94);
-    doc.setTextColor(200, 0, 0);
-    doc.text(`Security Violations Recorded: ${violations}`, 20, 102);
+    doc.text(`Name: ${name.toUpperCase()}`, 20, 70);
+    doc.text(`ID: ${sid}`, 20, 78);
+    doc.text(`Score: ${score} / 50`, 20, 86);
+    doc.setTextColor(180, 0, 0);
+    doc.text(`Security Violations: ${violations}`, 20, 94);
     doc.setTextColor(0);
 
-    doc.text("Detailed Responses:", 20, 120);
     const tableData = quizData.map((q, i) => [
         i+1, 
         q.q, 
-        userAnswers[i] !== null ? q.o[userAnswers[i]] : "No Answer",
+        userAnswers[i] !== null ? q.o[userAnswers[i]] : "N/A",
         q.correctText
     ]);
 
     doc.autoTable({
-        startY: 125,
-        head: [['#', 'Question', 'Your Answer', 'Correct Answer']],
+        startY: 110,
+        head: [['#', 'Question', 'Selected', 'Correct Answer']],
         body: tableData,
         styles: { fontSize: 8 },
         columnStyles: { 1: { cellWidth: 80 } }
     });
 
-    doc.save(`${name}_CS2206_Result.pdf`);
+    doc.save(`${name}_Result.pdf`);
 }
 </script>
 </body>
