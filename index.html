@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laguna University SQL Exam - Proctored Portal</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- AlaSQL Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/alasql@4"></script>
+  <style>
+    :root {
+      --lu-blue: #002b5b;
+      --lu-gold: #f4b400;
+      --lu-accent: #0056b3;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    /* Keep text editable for input controls */
+    input, textarea, code, pre {
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+    }
+
+    /* Flanked Header Banner with Logos */
+    .header-banner {
+      background: linear-gradient(135deg, var(--lu-white) 0%, #001a38 100%);
+      color: rgb(16, 155, 46);
+      padding: 15px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border-bottom: 4px solid var(--lu-gold);
+    }
+
+    .header-logo {
+      width: 75px;
+      height: 75px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .btn-lu {
+      background-color: var(--lu-accent);
+      color: white;
+      font-weight: 600;
+      border-radius: 8px;
+    }
+    .btn-lu:hover {
+      background-color: #003d80;
+      color: white;
+    }
+
+    #sql-input {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.95rem;
+      background-color: #1e1e1e;
+      color: #7ec699;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #333;
+      resize: vertical;
+    }
+    #sql-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.4);
+      border-color: var(--lu-accent);
+    }
+
+    .timer-badge {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .timer-warning {
+      animation: pulse 1s infinite;
+      background-color: #dc3545 !important;
+      color: white !important;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    /* Webcam Feed Window */
+    .proctor-cam-wrapper {
+      position: relative;
+      background-color: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      border: 2px solid #333;
+    }
+
+    #proctorVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .cam-status-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #28a745;
+      margin-right: 4px;
+      animation: pulse 1.2s infinite;
+    }
+
+    .table-custom-preview {
+      font-size: 0.8rem;
+    }
+    .table-custom-preview th {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+
+    /* Anti-Cheating Watermark */
+    .watermark-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='160'><text x='20' y='80' fill='%23000' font-size='16' font-family='sans-serif' transform='rotate(-20 100 100)'>PROCTORED EXAM - LAGUNA UNIV</text></svg>");
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- Anti-Cheating Watermark Overlay -->
+  <div class="watermark-overlay"></div>
+
+  <!-- Header Banner Flanked by LU & CCS Logos -->
+  <header class="header-banner mb-3">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        
+        <!-- Laguna University Logo (Left) -->
+        <div class="d-flex align-items-center">
+         <img src="lu.jpg" alt="LU Logo" height="90px" width="90px">
+        </div>
+
+        <!-- Central Exam Title -->
+        <div class="text-center mx-2">
+          <h1 class="fw-bold mb-0 fs-3 text-green"><i class="fa-solid  me-2 text-warning"></i>Laguna University</h1>
+          <p class="mb-0 text-light opacity-90 fw-semibold fs-6">College of Computing Studies (CCS)</p>
+          <span class="badge bg-warning text-dark mt-1 px-3 py-1 fw-bold" style="letter-spacing: 0.5px;">CCS IT Olympics - Database Programming</span>
+        </div>
+
+        <!-- College of Computing Studies (CCS) Logo (Right) -->
+        <div class="d-flex align-items-center">
+           <img src="ccs.jpg" alt="LU Logo" height="90px" width="120px">
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <div class="container mb-5">
+
+    <!-- Toast Notification Message Box -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+      <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body" id="toastMessage"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Examinee Verification / Registration Form -->
+    <div id="studentFormSection" class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card p-4">
+          <div class="card-body">
+            <div class="text-center mb-3">
+              <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2 fw-bold">COMPUTING STUDIES EXAM</span>
+              <h4 class="card-title fw-bold text-dark"><i class="fa-solid fa-user-shield me-2 text-primary"></i>Examinee Verification</h4>
+            </div>
+            <p class="text-muted text-center small mb-4">Provide examinee credentials and grant webcam authorization to begin the proctored SQL examination.</p>
+
+            <form id="studentForm" onsubmit="handleStartExam(event)">
+              <div class="mb-3">
+                <label for="studentName" class="form-label fw-semibold">Full Name</label>
+                <input type="text" class="form-control" id="studentName" placeholder="e.g. Juan Dela Cruz" required>
+              </div>
+              <div class="mb-3">
+                <label for="studentID" class="form-label fw-semibold">Student ID Number</label>
+                <input type="text" class="form-control" id="studentID" placeholder="e.g. 2023-10492" required>
+              </div>
+              <div class="mb-4">
+                <label for="studentCourse" class="form-label fw-semibold">Course & Program</label>
+                <select class="form-select" id="studentCourse" required>
+                  <option value="" selected disabled>Select Course...</option>
+                  <option value="BSCS - Computer Science">BS Computer Science (BSCS)</option>
+                  <option value="BSIT - Information Technology">BS Information Technology (BSIT)</option>
+                  <option value="ACT - Associate in Computer Tech">Associate in Computer Tech (ACT)</option>
+                </select>
+              </div>
+
+              <!-- Camera Authorization Alert -->
+              <div class="alert alert-warning small mb-4">
+                <i class="fa-solid fa-video me-1"></i> <strong>Strict AI Proctoring:</strong> Active webcam feed is mandatory. Unfocused tabs, print-screen keys, and right-clicks are monitored.
+              </div>
+
+              <button type="submit" class="btn btn-lu w-100 py-2 fs-6" id="startExamBtn">
+                <i class="fa-solid fa-camera me-2"></i>Authorize Camera & Start Exam
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Proctored Exam Area -->
+    <div id="examControls" style="display: none;">
+
+      <!-- Proctoring Status Dashboard Bar -->
+      <div class="card mb-3 bg-white">
+        <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="d-flex align-items-center gap-3">
+            <div>
+              <span class="text-muted small d-block">Examinee</span>
+              <strong id="displayName">--</strong> <span id="displayMeta" class="text-secondary small">(--)</span>
+            </div>
+          </div>
+
+          <!-- Active Anti-Cheating Indicators -->
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border border-success px-2 py-1 small">
+              <i class="fa-solid fa-video me-1"></i> Cam Active
+            </span>
+            <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1 small">
+              <i class="fa-solid fa-ban me-1"></i> Keys Blocked
+            </span>
+            <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1 small" id="strikeBadge">
+              <i class="fa-solid fa-triangle-exclamation me-1"></i> Violations: <strong id="strikeCount">0 / 3</strong>
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small me-1">Score:</span>
+            <span id="displayScore" class="fw-bold text-success me-2">0 / 15</span>
+            <button class="btn btn-outline-primary btn-sm" onclick="showScoreboard()"><i class="fa-solid fa-chart-column me-1"></i> Scoreboard</button>
+            <button class="btn btn-outline-dark btn-sm" onclick="showAnswersModal()"><i class="fa-solid fa-key me-1"></i> Keys</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Selection Tabs -->
+      <div class="card mb-3">
+        <div class="card-body p-2">
+          <div class="row text-center g-2" id="level-select-container">
+            <div class="col-md-4">
+              <button id="easyBtn" class="btn w-100 py-2 btn-outline-primary active position-relative" onclick="switchLevel('easy')">
+                <i class="fa-solid fa-cubes me-1"></i> <strong>Easy Level (DDL)</strong>
+                <span id="easyBadge" class="badge bg-success position-absolute top-0 end-0 m-1" style="display:none;"><i class="fa-solid fa-check"></i></span>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button id="moderateBtn" class="btn w-100 py-2 btn-outline-secondary position-relative" onclick="switchLevel('moderate')" disabled>
+                <i class="fa-solid fa-database me-1"></i> <strong>Moderate (DML/DQL)</strong>
+                <span id="moderateBadge" class="badge bg-success position-absolute top-0 end-0 m-1" style="display:none;"><i class="fa-solid fa-check"></i></span>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button id="difficultBtn" class="btn w-100 py-2 btn-outline-secondary position-relative" onclick="switchLevel('difficult')" disabled>
+                <i class="fa-solid fa-diagram-project me-1"></i> <strong>Difficult (Joins/Nested)</strong>
+                <span id="difficultBadge" class="badge bg-success position-absolute top-0 end-0 m-1" style="display:none;"><i class="fa-solid fa-check"></i></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Question & Editor Area -->
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card mb-3">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+              <div>
+                <span class="badge bg-primary me-2" id="currentLevelTag">EASY</span>
+                <span class="fw-bold text-secondary small" id="questionProgressText">Question 1 of 5</span>
+              </div>
+              <div class="d-flex align-items-center">
+                <i class="fa-regular fa-clock me-1 text-muted"></i>
+                <span id="timerBadge" class="badge bg-dark timer-badge px-3 py-1"><span id="time">600</span>s</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-dark mb-2 fs-6" id="questionPrompt">Loading question...</h5>
+
+              <!-- Schema Context Hint -->
+              <div id="dbSchemaHint" class="alert alert-light border small py-2 mb-3">
+                <i class="fa-solid fa-circle-info text-info me-1"></i> <strong>Target Schema Context:</strong> <span id="schemaHintText">COLLEGES (CollegeID, CollegeName, Dean)</span>
+              </div>
+
+              <!-- SQL Textarea Editor -->
+              <div class="mb-3">
+                <label for="sql-input" class="form-label fw-semibold text-muted small mb-1">SQL QUERY EDITOR</label>
+                <textarea id="sql-input" class="form-control" rows="5" placeholder="Write your SQL query here..."></textarea>
+              </div>
+
+              <!-- Controls -->
+              <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-outline-secondary btn-sm" onclick="clearEditor()"><i class="fa-solid fa-eraser me-1"></i> Clear</button>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-outline-warning btn-sm" onclick="resetDatabaseEngine()"><i class="fa-solid fa-arrows-rotate me-1"></i> Reset DB Tables</button>
+                  <button class="btn btn-lu px-4 btn-sm" id="submitBtn" onclick="checkAnswer()"><i class="fa-solid fa-paper-plane me-1"></i> Submit Query</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execution Result Feedback Terminal -->
+          <div class="card">
+            <div class="card-header bg-white fw-semibold small d-flex align-items-center py-2">
+              <i class="fa-solid fa-terminal me-2 text-primary"></i> Query Execution & Result Feedback
+            </div>
+            <div class="card-body py-2">
+              <div id="output" class="p-2 bg-light rounded border min-h-100">
+                <p class="text-muted mb-0 small"><i class="fa-regular fa-lightbulb me-1"></i> Enter a SQL statement and click 'Submit Query' to execute against AlaSQL engine.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar: Live Video Proctor & Database Inspector -->
+        <div class="col-lg-4">
+
+          <!-- Webcam Supervision Stream -->
+          <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold small d-flex justify-content-between align-items-center py-2">
+              <span><i class="fa-solid fa-eye me-1 text-danger"></i> AI Video Proctoring</span>
+              <span class="badge bg-success-subtle text-success small" id="faceDetectStatus">Active Feed</span>
+            </div>
+            <div class="card-body p-2 text-center">
+              <div class="proctor-cam-wrapper">
+                <video id="proctorVideo" autoplay playsinline muted></video>
+                <div class="cam-status-overlay">
+                  <span class="pulse-dot"></span> LIVE SUPERVISION
+                </div>
+              </div>
+              <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">
+                <i class="fa-solid fa-lock me-1"></i> Camera monitoring active for examinee identity verification.
+              </small>
+            </div>
+          </div>
+
+          <!-- Database Inspector Explorer -->
+          <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold small d-flex justify-content-between align-items-center py-2">
+              <span><i class="fa-solid fa-table me-1 text-primary"></i> In-Memory Database Inspector</span>
+              <button class="btn btn-sm btn-link text-decoration-none p-0" onclick="refreshDatabaseViewer()"><i class="fa-solid fa-arrows-rotate"></i></button>
+            </div>
+            <div class="card-body p-2" id="dbViewerContainer">
+              <div class="text-center py-2 text-muted small">Loading tables...</div>
+            </div>
+          </div>
+
+          <!-- Question Grid Navigator -->
+          <div class="card">
+            <div class="card-header bg-white fw-semibold small py-2">
+              <i class="fa-solid fa-list-check me-1 text-primary"></i> Level Questions
+            </div>
+            <div class="card-body p-2">
+              <div class="d-flex flex-wrap gap-2 justify-content-center" id="questionNavGrid"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab Switch / Unfocused Window Strike Modal -->
+  <div class="modal fade" id="violationModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-danger">
+        <div class="modal-header bg-danger text-white py-2">
+          <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-triangle-exclamation me-2"></i>PROCTORING VIOLATION DETECTED</h5>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="text-danger mb-3">
+            <i class="fa-solid fa-shield-cat fa-3x"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Unfocused Window / Tab Switch Detected</h5>
+          <p class="text-muted mb-3 small">
+            Leaving the exam window or switching browser tabs is strictly prohibited during proctored Laguna University examinations.
+          </p>
+          <div class="alert alert-danger py-2">
+            <strong>Strike Warning: <span id="modalStrikeCount">1</span> / 3</strong>
+            <div class="small mt-1">Reaching 3 strikes will lock and auto-submit your exam!</div>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-center py-2">
+          <button type="button" class="btn btn-danger btn-sm px-4" data-bs-dismiss="modal" onclick="resumeExamFocus()">Resume Examination</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Examinee Scoreboard Modal -->
+  <div class="modal fade" id="scoreboardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white py-2">
+          <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-trophy me-2 text-warning"></i> Examinee Scoreboard & Violation Summary</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="scoreboardSummary" class="alert alert-primary d-flex justify-content-around text-center mb-3 py-2">
+            <div><span class="d-block text-muted small">Total Score</span><strong id="modalTotalScore" class="fs-5">0 / 15</strong></div>
+            <div><span class="d-block text-muted small">Completion</span><strong id="modalCompletion" class="fs-5">0%</strong></div>
+            <div><span class="d-block text-muted small">Total Violations</span><strong id="modalViolations" class="fs-5 text-danger">0 Strikes</strong></div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle small">
+              <thead class="table-dark">
+                <tr>
+                  <th>Level</th>
+                  <th>Q#</th>
+                  <th>Status</th>
+                  <th>Submitted Query</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="scoreboardTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer py-2">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Answer Keys Modal -->
+  <div class="modal fade" id="answersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white py-2">
+          <h5 class="modal-title fw-bold fs-6"><i class="fa-solid fa-key me-2 text-warning"></i> Official Answer Key</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="answersContent"></div>
+        <div class="modal-footer py-2">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // System State Variables
+    let timer = null;
+    let timeLeft = 600;
+    let currentLevel = "easy";
+    let currentQuestionIndex = 0;
+    let studentInfo = { name: "", id: "", course: "" };
+
+    // Anti-Cheating State
+    let strikeCount = 0;
+    const MAX_STRIKES = 3;
+    let isExamActive = false;
+    let mediaStream = null;
+
+    let examResults = {
+      easy: [null, null, null, null, null],
+      moderate: [null, null, null, null, null],
+      difficult: [null, null, null, null, null]
+    };
+
+    let levelUnlocked = {
+      easy: true,
+      moderate: false,
+      difficult: false
+    };
+
+    // Full SQL Questions Database
+    const questions = {
+      easy: [
+        { id: 1, question: "1. Create a table COLLEGES with CollegeID (INT AUTO_INCREMENT PRIMARY KEY), CollegeName (VARCHAR(100)), and Dean (VARCHAR(100)).", schemaHint: "Target Table: COLLEGES", answer: "CREATE TABLE COLLEGES (CollegeID INT AUTO_INCREMENT PRIMARY KEY, CollegeName VARCHAR(100), Dean VARCHAR(100));" },
+        { id: 2, question: "2. Add a new column Location (VARCHAR(100)) to the COLLEGES table.", schemaHint: "Table: COLLEGES", answer: "ALTER TABLE COLLEGES ADD Location VARCHAR(100);" },
+        { id: 3, question: "3. Create a table PROGRAMS with ProgramID (INT AUTO_INCREMENT PRIMARY KEY), ProgramName (VARCHAR(100)), and CollegeID (INT).", schemaHint: "Target Table: PROGRAMS", answer: "CREATE TABLE PROGRAMS (ProgramID INT AUTO_INCREMENT PRIMARY KEY, ProgramName VARCHAR(100), CollegeID INT);" },
+        { id: 4, question: "4. Add a UNIQUE constraint named 'unique_program' on ProgramName in the PROGRAMS table.", schemaHint: "Table: PROGRAMS", answer: "ALTER TABLE PROGRAMS ADD CONSTRAINT unique_program UNIQUE (ProgramName);" },
+        { id: 5, question: "5. Drop the Location column from the COLLEGES table.", schemaHint: "Table: COLLEGES", answer: "ALTER TABLE COLLEGES DROP COLUMN Location;" }
+      ],
+      moderate: [
+        { id: 1, question: "1. Insert a record into COLLEGES: CollegeName = 'College of Computing Studies', Dean = 'Dr. Santos'.", schemaHint: "COLLEGES (CollegeName, Dean)", answer: "INSERT INTO COLLEGES (CollegeName, Dean) VALUES ('College of Computing Studies', 'Dr. Santos');" },
+        { id: 2, question: "2. Insert a program into PROGRAMS: ProgramName = 'BS Computer Science', CollegeID = 1.", schemaHint: "PROGRAMS (ProgramName, CollegeID)", answer: "INSERT INTO PROGRAMS (ProgramName, CollegeID) VALUES ('BS Computer Science', 1);" },
+        { id: 3, question: "3. Update the Dean to 'Dr. Cruz' for the 'College of Computing Studies' in COLLEGES.", schemaHint: "COLLEGES (Dean, CollegeName)", answer: "UPDATE COLLEGES SET Dean = 'Dr. Cruz' WHERE CollegeName = 'College of Computing Studies';" },
+        { id: 4, question: "4. Select distinct CollegeName values from the COLLEGES table.", schemaHint: "COLLEGES", answer: "SELECT DISTINCT CollegeName FROM COLLEGES;" },
+        { id: 5, question: "5. Delete the program named 'BS Computer Science' from the PROGRAMS table.", schemaHint: "PROGRAMS", answer: "DELETE FROM PROGRAMS WHERE ProgramName = 'BS Computer Science';" }
+      ],
+      difficult: [
+        { id: 1, question: "1. Nested query: Find the CollegeName of the college with the lowest (MIN) CollegeID.", schemaHint: "COLLEGES (CollegeID, CollegeName)", answer: "SELECT CollegeName FROM COLLEGES WHERE CollegeID = (SELECT MIN(CollegeID) FROM COLLEGES);" },
+        { id: 2, question: "2. JOIN query: Select ProgramName and CollegeName by joining PROGRAMS (p) and COLLEGES (c) on CollegeID.", schemaHint: "PROGRAMS p JOIN COLLEGES c ON p.CollegeID = c.CollegeID", answer: "SELECT p.ProgramName, c.CollegeName FROM PROGRAMS p JOIN COLLEGES c ON p.CollegeID = c.CollegeID;" },
+        { id: 3, question: "3. Create EMPLOYEES table with EmpID (INT AUTO_INCREMENT PRIMARY KEY), FirstName (VARCHAR(100)), LastName (VARCHAR(100)), Role (VARCHAR(50)), and DeptID (INT).", schemaHint: "Target Table: EMPLOYEES", answer: "CREATE TABLE EMPLOYEES (EmpID INT AUTO_INCREMENT PRIMARY KEY, FirstName VARCHAR(100), LastName VARCHAR(100), Role VARCHAR(50), DeptID INT);" },
+        { id: 4, question: "4. Aggregate query: Count total employees per Role from EMPLOYEES.", schemaHint: "EMPLOYEES (Role, COUNT(*))", answer: "SELECT Role, COUNT(*) FROM EMPLOYEES GROUP BY Role;" },
+        { id: 5, question: "5. JOIN + Aggregate: Select DeptName and the count of employees per department from DEPARTMENTS (d) and EMPLOYEES (e).", schemaHint: "DEPARTMENTS d JOIN EMPLOYEES e ON d.DeptID = e.DeptID GROUP BY d.DeptName", answer: "SELECT d.DeptName, COUNT(e.EmpID) FROM DEPARTMENTS d JOIN EMPLOYEES e ON d.DeptID = e.DeptID GROUP BY d.DeptName;" }
+      ]
+    };
+
+    // Camera Authorization Handler
+    async function initCameraProctoring() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+          audio: false
+        });
+        const videoElement = document.getElementById("proctorVideo");
+        videoElement.srcObject = mediaStream;
+        return true;
+      } catch (err) {
+        showToast("Webcam authorization failed! Active camera required for proctored exam.", "bg-danger");
+        return false;
+      }
+    }
+
+    // Initialize AlaSQL In-Memory Engine Tables
+    function initDatabaseEngine() {
+      try {
+        alasql('DROP TABLE IF EXISTS COLLEGES');
+        alasql('DROP TABLE IF EXISTS PROGRAMS');
+        alasql('DROP TABLE IF EXISTS EMPLOYEES');
+        alasql('DROP TABLE IF EXISTS DEPARTMENTS');
+
+        alasql('CREATE TABLE COLLEGES (CollegeID INT AUTO_INCREMENT PRIMARY KEY, CollegeName VARCHAR(100), Dean VARCHAR(100))');
+        alasql('CREATE TABLE PROGRAMS (ProgramID INT AUTO_INCREMENT PRIMARY KEY, ProgramName VARCHAR(100), CollegeID INT)');
+        alasql('CREATE TABLE DEPARTMENTS (DeptID INT AUTO_INCREMENT PRIMARY KEY, DeptName VARCHAR(100))');
+        alasql('CREATE TABLE EMPLOYEES (EmpID INT AUTO_INCREMENT PRIMARY KEY, FirstName VARCHAR(100), LastName VARCHAR(100), Role VARCHAR(50), DeptID INT)');
+
+        alasql("INSERT INTO COLLEGES (CollegeID, CollegeName, Dean) VALUES (1, 'College of Computing Studies', 'Dr. Santos'), (2, 'College of Engineering', 'Engr. Reyes')");
+        alasql("INSERT INTO PROGRAMS (ProgramID, ProgramName, CollegeID) VALUES (1, 'BS Computer Science', 1), (2, 'BS Information Technology', 1)");
+        alasql("INSERT INTO DEPARTMENTS (DeptID, DeptName) VALUES (1, 'IT Department'), (2, 'CS Department')");
+        alasql("INSERT INTO EMPLOYEES (EmpID, FirstName, LastName, Role, DeptID) VALUES (1, 'Maria', 'Clara', 'Instructor', 1), (2, 'Jose', 'Rizal', 'Professor', 1), (3, 'Andres', 'Bonifacio', 'Instructor', 2)");
+      } catch (err) {
+        console.warn("Database initialization warning:", err);
+      }
+      refreshDatabaseViewer();
+    }
+
+    function resetDatabaseEngine() {
+      initDatabaseEngine();
+      showToast("Database seed state reset.", "bg-info");
+    }
+
+    // Update Sidebar Database Inspector
+    function refreshDatabaseViewer() {
+      const container = document.getElementById("dbViewerContainer");
+      container.innerHTML = "";
+
+      let tables = [];
+      try {
+        const res = alasql('SHOW TABLES');
+        tables = res.map(t => t.tableid || Object.values(t)[0]);
+      } catch(e) {
+        tables = ['COLLEGES', 'PROGRAMS', 'EMPLOYEES', 'DEPARTMENTS'];
+      }
+
+      tables.forEach(tableName => {
+        try {
+          const rows = alasql(`SELECT * FROM ${tableName}`);
+          let tableHtml = `<div class="mb-2"><div class="fw-semibold small text-primary mb-1"><i class="fa-solid fa-table-cells me-1"></i>${tableName} <span class="badge bg-light text-dark border">${rows.length}</span></div>`;
+          
+          if (rows.length > 0) {
+            const keys = Object.keys(rows[0]);
+            tableHtml += `<div class="table-responsive" style="max-height:110px;"><table class="table table-sm table-bordered table-custom-preview mb-0"><thead><tr>`;
+            keys.forEach(k => tableHtml += `<th>${k}</th>`);
+            tableHtml += `</tr></thead><tbody>`;
+            
+            rows.slice(0, 3).forEach(row => {
+              tableHtml += `<tr>`;
+              keys.forEach(k => tableHtml += `<td>${row[k] !== undefined ? row[k] : ''}</td>`);
+              tableHtml += `</tr>`;
+            });
+            tableHtml += `</tbody></table></div>`;
+          } else {
+            tableHtml += `<p class="text-muted small fst-italic mb-0">[ Empty ]</p>`;
+          }
+          tableHtml += `</div>`;
+          container.innerHTML += tableHtml;
+        } catch(e) {}
+      });
+    }
+
+    // Start Exam Event
+    async function handleStartExam(e) {
+      e.preventDefault();
+      studentInfo.name = document.getElementById("studentName").value.trim();
+      studentInfo.id = document.getElementById("studentID").value.trim();
+      studentInfo.course = document.getElementById("studentCourse").value;
+
+      if (!studentInfo.name || !studentInfo.id || !studentInfo.course) {
+        showToast("Please complete examinee verification details.", "bg-danger");
+        return;
+      }
+
+      const camOk = await initCameraProctoring();
+      if (!camOk) return;
+
+      document.getElementById("displayName").textContent = studentInfo.name;
+      document.getElementById("displayMeta").textContent = `(${studentInfo.id} - ${studentInfo.course})`;
+
+      document.getElementById("studentFormSection").style.display = "none";
+      document.getElementById("examControls").style.display = "block";
+
+      isExamActive = true;
+      setupAntiCheatingListeners();
+
+      initDatabaseEngine();
+      loadQuestion();
+      startTimer();
+      showToast(`Camera verified. Proctored exam active for ${studentInfo.name}.`, "bg-success");
+    }
+
+    // Strict Anti-Cheating Event Listeners
+    function setupAntiCheatingListeners() {
+      // Visibility Change (Tab Switch)
+      document.addEventListener("visibilitychange", () => {
+        if (!isExamActive) return;
+        if (document.hidden) {
+          triggerStrike("Tab Switch or Browser Minimization");
+        }
+      });
+
+      // Focus Lost (Window Blur)
+      window.addEventListener("blur", () => {
+        if (!isExamActive) return;
+        triggerStrike("Window Focus Lost");
+      });
+
+      // Shortcut Keys Block
+      window.addEventListener("keydown", (e) => {
+        if (!isExamActive) return;
+
+        // PrintScreen Key
+        if (e.key === "PrintScreen" || e.keyCode === 44) {
+          e.preventDefault();
+          triggerStrike("Attempted Screenshot (PrintScreen)");
+          return false;
+        }
+
+        // Snipping Tool Shortcut (Win + Shift + S)
+        if (e.metaKey && e.shiftKey && (e.key === 'S' || e.key === 's')) {
+          e.preventDefault();
+          triggerStrike("Attempted Snipping Tool Shortcut");
+          return false;
+        }
+
+        // DevTools & Commands (F12, Ctrl+Shift+I/J/C, Ctrl+U/S/P)
+        if (
+          e.key === "F12" ||
+          (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
+          (e.ctrlKey && (e.key === "U" || e.key === "u" || e.key === "S" || e.key === "s" || e.key === "P" || e.key === "p"))
+        ) {
+          e.preventDefault();
+          showToast(`Shortcut '${e.key}' blocked by Proctoring system.`, "bg-danger");
+          return false;
+        }
+      });
+
+      // Context Menu Restrict
+      document.addEventListener("contextmenu", (e) => {
+        if (isExamActive) {
+          e.preventDefault();
+          showToast("Right-click context menu disabled.", "bg-warning");
+        }
+      });
+    }
+
+    function triggerStrike(reason) {
+      if (!isExamActive) return;
+      strikeCount++;
+
+      document.getElementById("strikeCount").textContent = `${strikeCount} / ${MAX_STRIKES}`;
+      document.getElementById("modalStrikeCount").textContent = strikeCount;
+
+      if (strikeCount >= MAX_STRIKES) {
+        lockAndAutoSubmit();
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById("violationModal"));
+        modal.show();
+      }
+    }
+
+    function resumeExamFocus() {
+      showToast("Exam resumed. Focus must remain on the portal.", "bg-info");
+    }
+
+    function lockAndAutoSubmit() {
+      isExamActive = false;
+      clearInterval(timer);
+      document.getElementById("submitBtn").disabled = true;
+      document.getElementById("sql-input").disabled = true;
+
+      alert(`EXAM TERMINATED: Maximum violation limit reached (${MAX_STRIKES} strikes). Answers auto-submitted.`);
+      showScoreboard();
+    }
+
+    function switchLevel(level) {
+      if (!levelUnlocked[level]) {
+        showToast(`Level '${level.toUpperCase()}' is locked! Complete previous levels first.`, "bg-warning");
+        return;
+      }
+      currentLevel = level;
+      currentQuestionIndex = 0;
+      updateLevelUI();
+      loadQuestion();
+      resetTimer();
+    }
+
+    function updateLevelUI() {
+      ['easy', 'moderate', 'difficult'].forEach(lvl => {
+        const btn = document.getElementById(`${lvl}Btn`);
+        if (btn) {
+          if (currentLevel === lvl) {
+            btn.className = "btn w-100 py-2 btn-primary active position-relative shadow-sm";
+          } else if (levelUnlocked[lvl]) {
+            btn.className = "btn w-100 py-2 btn-outline-primary position-relative";
+            btn.removeAttribute("disabled");
+          } else {
+            btn.className = "btn w-100 py-2 btn-outline-secondary position-relative";
+            btn.setAttribute("disabled", "true");
+          }
+        }
+      });
+      document.getElementById("currentLevelTag").textContent = currentLevel.toUpperCase();
+    }
+
+    function loadQuestion() {
+      const qObj = questions[currentLevel][currentQuestionIndex];
+      document.getElementById("questionProgressText").textContent = `Question ${currentQuestionIndex + 1} of 5`;
+      document.getElementById("questionPrompt").textContent = qObj.question;
+      document.getElementById("schemaHintText").textContent = qObj.schemaHint;
+
+      const prevResult = examResults[currentLevel][currentQuestionIndex];
+      const sqlInput = document.getElementById("sql-input");
+      sqlInput.value = prevResult ? prevResult.userQuery : "";
+
+      renderQuestionGrid();
+
+      const outputDiv = document.getElementById("output");
+      if (prevResult) {
+        const badge = prevResult.passed ? 
+          '<span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Passed</span>' : 
+          '<span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i> Failed</span>';
+        outputDiv.innerHTML = `<div class="small"><strong>Previous Status:</strong> ${badge} <code class="d-block mt-1">${escapeHtml(prevResult.userQuery)}</code></div>`;
+      } else {
+        outputDiv.innerHTML = `<p class="text-muted mb-0 small"><i class="fa-regular fa-lightbulb me-1"></i> Write a query and click 'Submit Query'.</p>`;
+      }
+    }
+
+    function renderQuestionGrid() {
+      const grid = document.getElementById("questionNavGrid");
+      grid.innerHTML = "";
+      questions[currentLevel].forEach((q, idx) => {
+        const res = examResults[currentLevel][idx];
+        let btnClass = "btn-outline-secondary";
+
+        if (idx === currentQuestionIndex) {
+          btnClass = "btn-primary fw-bold";
+        } else if (res) {
+          btnClass = res.passed ? "btn-success" : "btn-danger";
+        }
+
+        const btn = document.createElement("button");
+        btn.className = `btn ${btnClass} btn-sm px-3 py-1`;
+        btn.innerHTML = `${idx + 1}`;
+        btn.onclick = () => {
+          currentQuestionIndex = idx;
+          loadQuestion();
+        };
+        grid.appendChild(btn);
+      });
+    }
+
+    function normalizeSQL(sql) {
+      return sql
+        .replace(/--.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/\s*([,()=;])\s*/g, '$1')
+        .trim()
+        .toLowerCase();
+    }
+
+    function checkAnswer() {
+      if (!isExamActive) return;
+
+      const userQuery = document.getElementById("sql-input").value.trim();
+      const targetQuestion = questions[currentLevel][currentQuestionIndex];
+      const outputDiv = document.getElementById("output");
+
+      if (!userQuery) {
+        showToast("Enter a SQL query prior to submitting.", "bg-warning");
+        return;
+      }
+
+      let isCorrect = false;
+      let executionError = null;
+
+      const normUser = normalizeSQL(userQuery);
+      const normCorrect = normalizeSQL(targetQuestion.answer);
+
+      if (normUser === normCorrect) {
+        isCorrect = true;
+      } else {
+        try {
+          alasql(userQuery);
+          if (normUser.replace(/;/g,'') === normCorrect.replace(/;/g,'')) {
+            isCorrect = true;
+          }
+        } catch (err) {
+          executionError = err.message;
+        }
+      }
+
+      const timestamp = new Date().toLocaleTimeString();
+      examResults[currentLevel][currentQuestionIndex] = {
+        passed: isCorrect,
+        userQuery: userQuery,
+        timestamp: timestamp
+      };
+
+      if (isCorrect) {
+        outputDiv.innerHTML = `<div class="alert alert-success py-2 mb-0 small"><i class="fa-solid fa-circle-check me-1"></i> <strong>Correct SQL Query!</strong></div>`;
+        showToast("Correct query!", "bg-success");
+      } else {
+        let errDetails = executionError ? `<div class="mt-1 text-danger small">Execution Error: ${escapeHtml(executionError)}</div>` : '';
+        outputDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small"><i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>Incorrect Statement.</strong> ${errDetails}</div>`;
+        showToast("Incorrect query result.", "bg-danger");
+      }
+
+      refreshDatabaseViewer();
+      updateTotalScore();
+      renderQuestionGrid();
+      checkLevelCompletion();
+    }
+
+    function checkLevelCompletion() {
+      const currentLevelResults = examResults[currentLevel];
+      const completedCount = currentLevelResults.filter(r => r !== null).length;
+      const passedCount = currentLevelResults.filter(r => r && r.passed).length;
+
+      if (completedCount === 5) {
+        document.getElementById(`${currentLevel}Badge`).style.display = "inline-block";
+
+        if (currentLevel === "easy" && passedCount >= 3) {
+          levelUnlocked.moderate = true;
+          showToast("Easy Level Completed! Moderate level unlocked.", "bg-success");
+        } else if (currentLevel === "moderate" && passedCount >= 3) {
+          levelUnlocked.difficult = true;
+          showToast("Moderate Level Completed! Difficult level unlocked.", "bg-success");
+        }
+        updateLevelUI();
+      }
+    }
+
+    function updateTotalScore() {
+      let totalPassed = 0;
+      Object.keys(examResults).forEach(lvl => {
+        examResults[lvl].forEach(res => {
+          if (res && res.passed) totalPassed++;
+        });
+      });
+      document.getElementById("displayScore").textContent = `${totalPassed} / 15`;
+      return totalPassed;
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      document.getElementById("time").textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        const timerBadge = document.getElementById("timerBadge");
+        document.getElementById("time").textContent = timeLeft;
+
+        if (timeLeft <= 60) {
+          timerBadge.classList.add("timer-warning");
+        } else {
+          timerBadge.classList.remove("timer-warning");
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          showToast("Level time limit reached!", "bg-danger");
+          document.getElementById("submitBtn").disabled = true;
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timeLeft = 600;
+      document.getElementById("timerBadge").classList.remove("timer-warning");
+      document.getElementById("submitBtn").disabled = false;
+      startTimer();
+    }
+
+    function clearEditor() {
+      document.getElementById("sql-input").value = "";
+    }
+
+    function showScoreboard() {
+      const tbody = document.getElementById("scoreboardTableBody");
+      tbody.innerHTML = "";
+
+      let totalScore = updateTotalScore();
+      let totalAttempted = 0;
+
+      ['easy', 'moderate', 'difficult'].forEach(lvl => {
+        examResults[lvl].forEach((res, idx) => {
+          if (res) totalAttempted++;
+          const tr = document.createElement("tr");
+          const statusCell = res ? 
+            (res.passed ? '<span class="badge bg-success">PASS</span>' : '<span class="badge bg-danger">FAIL</span>') : 
+            '<span class="badge bg-secondary">Unattempted</span>';
+
+          tr.innerHTML = `
+            <td><strong class="text-uppercase">${lvl}</strong></td>
+            <td>Q${idx + 1}</td>
+            <td>${statusCell}</td>
+            <td style="max-width:240px; word-wrap:break-word;">${res ? `<code>${escapeHtml(res.userQuery)}</code>` : '--'}</td>
+            <td><small class="text-muted">${res ? res.timestamp : '--'}</small></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+
+      document.getElementById("modalTotalScore").textContent = `${totalScore} / 15`;
+      document.getElementById("modalCompletion").textContent = `${Math.round((totalAttempted / 15) * 100)}%`;
+      document.getElementById("modalViolations").textContent = `${strikeCount} Strikes`;
+
+      const modal = new bootstrap.Modal(document.getElementById("scoreboardModal"));
+      modal.show();
+    }
+
+    function showAnswersModal() {
+      const container = document.getElementById("answersContent");
+      container.innerHTML = "";
+
+      ['easy', 'moderate', 'difficult'].forEach(lvl => {
+        let levelHtml = `<div class="card mb-3"><div class="card-header fw-bold bg-light text-uppercase py-1 small">${lvl} Level Answer Key</div><div class="card-body p-0"><ul class="list-group list-group-flush">`;
+        questions[lvl].forEach((q, idx) => {
+          levelHtml += `
+            <li class="list-group-item py-2">
+              <div class="fw-semibold text-dark small mb-1">${q.question}</div>
+              <div class="bg-dark text-success p-2 rounded font-monospace small" style="font-size:0.8rem;">${escapeHtml(q.answer)}</div>
+            </li>
+          `;
+        });
+        levelHtml += `</ul></div></div>`;
+        container.innerHTML += levelHtml;
+      });
+
+      const modal = new bootstrap.Modal(document.getElementById("answersModal"));
+      modal.show();
+    }
+
+    function showToast(message, bgClass = "bg-primary") {
+      const toastEl = document.getElementById("statusToast");
+      const toastMsg = document.getElementById("toastMessage");
+      toastEl.className = `toast align-items-center text-white border-0 ${bgClass}`;
+      toastMsg.textContent = message;
+      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+      toast.show();
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
