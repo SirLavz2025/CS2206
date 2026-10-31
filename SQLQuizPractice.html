@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Quiz - Basic to Advanced</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* Container Card matching the design style */
+    .quiz-card {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 550px;
+      padding: 25px 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    /* Quiz Header */
+    .quiz-title {
+      color: #0b3c5d;
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .level-basic { background-color: #e1f5fe; color: #0288d1; }
+    .level-intermediate { background-color: #fff8e1; color: #ffa000; }
+    .level-advanced { background-color: #fbe9e7; color: #d84315; }
+
+    .divider {
+      height: 2px;
+      background-color: #0b3c5d;
+      margin: 12px 0 18px 0;
+      opacity: 0.3;
+    }
+
+    .quiz-subtitle {
+      color: #0b3c5d;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .instruction {
+      font-size: 15px;
+      color: #333333;
+      margin-bottom: 12px;
+    }
+
+    /* Styled Table */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      border: 1px solid #004080;
+    }
+
+    th {
+      background-color: #003366;
+      color: white;
+      text-align: left;
+      padding: 8px 12px;
+      font-weight: 600;
+      border: 1px solid #002244;
+    }
+
+    td {
+      padding: 7px 12px;
+      border: 1px solid #cfd8dc;
+      color: #2c3e50;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f4f8fb;
+    }
+
+    /* Code Block */
+    .code-box {
+      background-color: #eef5fc;
+      border: 1px solid #b3d1ff;
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      color: #002b66;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+      white-space: pre-wrap;
+    }
+
+    .question-prompt {
+      font-size: 16px;
+      font-weight: bold;
+      color: #111827;
+      margin-bottom: 15px;
+    }
+
+    /* Multiple Choice Options */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+      margin-bottom: 20px;
+    }
+
+    .option-btn {
+      background: transparent;
+      border: none;
+      text-align: left;
+      font-size: 15px;
+      color: #1f2937;
+      cursor: pointer;
+      padding: 8px 6px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .option-btn:hover {
+      background-color: #e2e8f0;
+    }
+
+    .option-btn strong {
+      font-size: 16px;
+      margin-right: 6px;
+    }
+
+    /* Footer & Navigation Controls */
+    .quiz-footer {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background-color: #003366;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .nav-btn:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-status {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .modal-status.correct { color: #16a34a; }
+    .modal-status.incorrect { color: #dc2626; }
+
+    .modal-text {
+      font-size: 15px;
+      color: #4b5563;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .close-btn {
+      background-color: #003366;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h1 class="quiz-title">SQL QUIZ</h1>
+        <span id="levelBadge" class="level-badge level-basic">Basic</span>
+      </div>
+      <span id="quizProgress" style="font-size: 14px; font-weight: bold; color: #6b7280;">1 / 3</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="quiz-subtitle">Guess the Output!</div>
+    <div class="instruction" id="instructionText">You have this Employees table:</div>
+
+    <div class="table-container" id="tableContainer">
+      <!-- Dynamic Table Generated Here -->
+    </div>
+
+    <div class="instruction">You run:</div>
+    <div class="code-box" id="codeQuery"></div>
+
+    <div class="question-prompt" id="questionPrompt">Which rows will this return?</div>
+
+    <div class="options-grid" id="optionsContainer">
+      <!-- Options Generated Here -->
+    </div>
+
+    <div class="quiz-footer">
+      <button class="nav-btn" id="prevBtn" onclick="changeQuestion(-1)">Previous</button>
+      <span style="font-size: 13px; color: #6b7280;">Select an option to test your answer</span>
+      <button class="nav-btn" id="nextBtn" onclick="changeQuestion(1)">Next</button>
+    </div>
+  </div>
+
+  <!-- Modal Pop-up -->
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-content">
+      <div id="modalStatus" class="modal-status">Correct!</div>
+      <p id="modalExplanation" class="modal-text"></p>
+      <button class="close-btn" onclick="closeModal()">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    // Quiz Questions Data (Basic to Advanced)
+    const quizData = [
+      {
+        level: "Basic",
+        levelClass: "level-basic",
+        tableHeaders: ["EmployeeID", "EmployeeName", "Department"],
+        tableRows: [
+          ["1", "Alice", "HR"],
+          ["2", "Brian", "IT"],
+          ["3", "Carol", "Sales"],
+          ["4", "David", "IT"],
+          ["5", "Emma", "Finance"],
+          ["6", "Frank", "HR"]
+        ],
+        query: `SELECT *\nFROM Employees\nORDER BY EmployeeID\nLIMIT 2 OFFSET 3;`,
+        prompt: "Which rows will this return?",
+        options: [
+          { label: "A", text: "David and Emma", correct: true },
+          { label: "B", text: "Carol and David", correct: false },
+          { label: "C", text: "Emma and Frank", correct: false },
+          { label: "D", text: "Alice and Brian", correct: false }
+        ],
+        explanation: "<b>LIMIT 2</b> specifies returning 2 rows. <b>OFFSET 3</b> skips the first 3 rows (Alice, Brian, Carol) and begins at the 4th row (David). Thus, David and Emma are returned."
+      },
+      {
+        level: "Intermediate",
+        levelClass: "level-intermediate",
+        tableHeaders: ["EmployeeName", "Department", "Salary"],
+        tableRows: [
+          ["Alice", "HR", "50000"],
+          ["Brian", "IT", "70000"],
+          ["Carol", "Sales", "60000"],
+          ["David", "IT", "80000"],
+          ["Emma", "Finance", "75000"]
+        ],
+        query: `SELECT Department, AVG(Salary) as AvgSal\nFROM Employees\nGROUP BY Department\nHAVING AVG(Salary) > 65000;`,
+        prompt: "Which departments will be included in the final result?",
+        options: [
+          { label: "A", text: "IT only", correct: false },
+          { label: "B", text: "IT and Finance", correct: true },
+          { label: "C", text: "Sales, IT, and Finance", correct: false },
+          { label: "D", text: "Finance only", correct: false }
+        ],
+        explanation: "IT average is (70000 + 80000)/2 = 75,000. Finance average is 75,000. HR is 50,000 and Sales is 60,000. The <b>HAVING</b> clause filters out averages ≤ 65000, leaving IT and Finance."
+      },
+      {
+        level: "Advanced",
+        levelClass: "level-advanced",
+        tableHeaders: ["EmployeeName", "Department", "Salary"],
+        tableRows: [
+          ["Alice", "IT", "60000"],
+          ["Brian", "IT", "70000"],
+          ["Carol", "IT", "70000"],
+          ["David", "IT", "80000"]
+        ],
+        query: `SELECT EmployeeName, Salary,\n  DENSE_RANK() OVER (ORDER BY Salary DESC) as rnk\nFROM Employees;`,
+        prompt: "What rank values (rnk) will Brian and Carol receive?",
+        options: [
+          { label: "A", text: "Brian: 2, Carol: 3", correct: false },
+          { label: "B", text: "Brian: 2, Carol: 2", correct: true },
+          { label: "C", text: "Brian: 3, Carol: 3", correct: false },
+          { label: "D", text: "Brian: 2, Carol: 4", correct: false }
+        ],
+        explanation: "<b>DENSE_RANK()</b> assigns equal ranks to duplicate values without skipping subsequent ranks. David (80000) is Rank 1. Both Brian and Carol (70000) get Rank 2."
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+
+    function renderQuestion() {
+      const q = quizData[currentQuestionIdx];
+
+      // Update Header
+      const badge = document.getElementById("levelBadge");
+      badge.textContent = q.level;
+      badge.className = `level-badge ${q.levelClass}`;
+      document.getElementById("quizProgress").textContent = `${currentQuestionIdx + 1} / ${quizData.length}`;
+
+      // Render Table
+      let tableHtml = `<table><thead><tr>`;
+      q.tableHeaders.forEach(header => tableHtml += `<th>${header}</th>`);
+      tableHtml += `</tr></thead><tbody>`;
+      q.tableRows.forEach(row => {
+        tableHtml += `<tr>`;
+        row.forEach(cell => tableHtml += `<td>${cell}</td>`);
+        tableHtml += `</tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      document.getElementById("tableContainer").innerHTML = tableHtml;
+
+      // Render Code & Options
+      document.getElementById("codeQuery").textContent = q.query;
+      document.getElementById("questionPrompt").textContent = q.prompt;
+
+      let optionsHtml = "";
+      q.options.forEach(opt => {
+        optionsHtml += `
+          <button class="option-btn" onclick="checkAnswer(${opt.correct})">
+            <strong>${opt.label})</strong> ${opt.text}
+          </button>
+        `;
+      });
+      document.getElementById("optionsContainer").innerHTML = optionsHtml;
+
+      // Control Buttons
+      document.getElementById("prevBtn").disabled = currentQuestionIdx === 0;
+      document.getElementById("nextBtn").disabled = currentQuestionIdx === quizData.length - 1;
+    }
+
+    function changeQuestion(direction) {
+      currentQuestionIdx += direction;
+      renderQuestion();
+    }
+
+    function checkAnswer(isCorrect) {
+      const q = quizData[currentQuestionIdx];
+      const statusEl = document.getElementById("modalStatus");
+      const explanationEl = document.getElementById("modalExplanation");
+
+      if (isCorrect) {
+        statusEl.textContent = "Correct! 🎉";
+        statusEl.className = "modal-status correct";
+      } else {
+        statusEl.textContent = "Incorrect ❌";
+        statusEl.className = "modal-status incorrect";
+      }
+
+      explanationEl.innerHTML = q.explanation;
+      document.getElementById("resultModal").classList.add("active");
+    }
+
+    function closeModal() {
+      document.getElementById("resultModal").classList.remove("active");
+    }
+
+    // Initialize Quiz
+    renderQuestion();
+  </script>
+</body>
+</html>
