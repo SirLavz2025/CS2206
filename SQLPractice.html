@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Quiz Master - 40 Questions Basic to Advanced</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#0b3c5d',
+              dark: '#002244',
+              navy: '#003366',
+              light: '#328cc1',
+              pale: '#eef5fc',
+              accent: '#d9b310'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #f0f4f8;
+      color: #1e293b;
+    }
+    
+    .code-font {
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Card Glow and Shadow */
+    .quiz-card {
+      box-shadow: 0 10px 25px -5px rgba(11, 60, 93, 0.1), 0 8px 10px -6px rgba(11, 60, 93, 0.05);
+    }
+
+    /* Table styling matching user image */
+    .sql-table {
+      border: 1px solid #003366;
+    }
+    .sql-table th {
+      background-color: #003366;
+      color: white;
+      border: 1px solid #002244;
+    }
+    .sql-table td {
+      border: 1px solid #cbd5e1;
+    }
+    .sql-table tr:nth-child(even) {
+      background-color: #f4f8fb;
+    }
+
+    /* Option button transition */
+    .option-btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .option-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Question Grid Navigator */
+    .q-grid-btn {
+      transition: all 0.15s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+  <!-- Header Bar -->
+  <header class="bg-brand-dark text-white shadow-md border-b border-brand-navy sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-brand-light p-2 rounded-lg text-white">
+          <i class="fa-solid font-bold fa-database text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-xl tracking-wide uppercase text-white flex items-center gap-2">
+            SQL Quiz Master
+          </h1>
+          <p class="text-xs text-blue-200">Interactive SQL Mastery Platform</p>
+        </div>
+      </div>
+
+      <!-- Stats Bar in Header -->
+      <div class="hidden sm:flex items-center gap-6 text-sm">
+        <div class="flex items-center gap-2 bg-brand/50 px-3 py-1.5 rounded-full border border-blue-400/30">
+          <i class="fa-solid fa-trophy text-yellow-400"></i>
+          <span>Score: <strong id="headerScore" class="text-white font-bold">0</strong> / 40</span>
+        </div>
+        <div class="flex items-center gap-2 bg-brand/50 px-3 py-1.5 rounded-full border border-blue-400/30">
+          <i class="fa-solid fa-chart-pie text-cyan-400"></i>
+          <span>Accuracy: <strong id="headerAccuracy" class="text-white font-bold">0%</strong></span>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Toggle -->
+      <button id="toggleGridMobile" class="sm:hidden text-white p-2 rounded-lg bg-brand-navy hover:bg-brand">
+        <i class="fa-solid fa-th-large text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
+
+    <!-- Left Column: Quiz Content Card -->
+    <div class="flex-1 flex flex-col gap-4">
+
+      <!-- Topic Filters & Controls Bar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Filter Topic:</span>
+          <select id="topicFilter" onchange="filterQuestions()" class="text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-medium text-slate-700 focus:ring-2 focus:ring-brand focus:outline-none">
+            <option value="ALL">All Categories (40)</option>
+            <option value="DDL">DDL (Data Definition)</option>
+            <option value="DML">DML (Data Manipulation)</option>
+            <option value="DQL">DQL (Data Querying)</option>
+            <option value="Joins">Joins (Inner, Outer, Self, Cross)</option>
+            <option value="Nested">Nested / Subqueries / EXISTS</option>
+            <option value="Operators">Operators (IN, LIKE, Logical, Comparison)</option>
+            <option value="Distinct">DISTINCT & Aggregates</option>
+          </select>
+
+          <select id="levelFilter" onchange="filterQuestions()" class="text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 font-medium text-slate-700 focus:ring-2 focus:ring-brand focus:outline-none">
+            <option value="ALL">All Levels</option>
+            <option value="Basic">Basic</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="resetQuiz()" class="text-xs sm:text-sm font-semibold text-slate-600 hover:text-red-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-red-50 transition">
+            <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- THE QUIZ CARD (Matching visual aesthetic from reference image) -->
+      <div class="quiz-card bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 relative flex flex-col justify-between min-h-[500px]">
+        
+        <div>
+          <!-- Quiz Top Section -->
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h2 class="text-3xl font-extrabold text-brand tracking-tight uppercase">SQL QUIZ</h2>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="qLevelBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-blue-100 text-blue-800">
+                  Basic
+                </span>
+                <span id="qTopicBadge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  DQL
+                </span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span id="qIndexText" class="text-lg font-bold text-slate-700">Question 1 of 40</span>
+              <p id="qAttemptStatus" class="text-xs font-medium text-slate-400 mt-0.5">Unanswered</p>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="h-0.5 bg-brand-navy/20 my-4"></div>
+
+          <!-- Subtitle / Title Prompt -->
+          <h3 id="qSubtitle" class="text-xl sm:text-2xl font-bold text-brand mb-2">Guess the Output!</h3>
+          <p id="qInstruction" class="text-sm sm:text-base text-slate-700 font-medium mb-4">
+            You have this dataset table:
+          </p>
+
+          <!-- Table Container (Interactive / Dynamic) -->
+          <div id="tableContainer" class="overflow-x-auto mb-5 rounded-md">
+            <!-- Dynamic SQL Table injected here -->
+          </div>
+
+          <!-- Code Snippet Query Box -->
+          <div class="mb-5">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">You run this query:</p>
+            <div class="bg-brand-pale border border-blue-200 rounded-lg p-4 font-mono text-sm sm:text-base text-brand-dark font-semibold leading-relaxed shadow-inner overflow-x-auto">
+              <pre id="qCodeBlock" class="whitespace-pre-wrap code-font"></pre>
+            </div>
+          </div>
+
+          <!-- Question Prompt -->
+          <p id="qPrompt" class="text-base sm:text-lg font-bold text-slate-900 mb-4">
+            Which rows or result set will this return?
+          </p>
+
+          <!-- Options Grid -->
+          <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+            <!-- Dynamic 4 Options injected here -->
+          </div>
+        </div>
+
+        <!-- Quiz Card Footer Controls -->
+        <div class="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
+          <button id="prevBtn" onclick="navigateQuestion(-1)" class="px-5 py-2.5 rounded-lg font-bold text-white bg-brand-navy hover:bg-brand disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-arrow-left"></i> Previous
+          </button>
+
+          <span class="text-xs text-slate-500 font-medium hidden sm:inline-block">
+            Select an option to test your SQL knowledge
+          </span>
+
+          <button id="nextBtn" onclick="navigateQuestion(1)" class="px-5 py-2.5 rounded-lg font-bold text-white bg-brand-navy hover:bg-brand disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-2 text-sm">
+            Next <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column: Sidebar / Question Navigator Grid & Stats -->
+    <div id="sidebarNav" class="w-full lg:w-80 flex flex-col gap-4">
+
+      <!-- Scoreboard Panel -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-brand"></i> Performance Overview
+        </h3>
+
+        <div class="grid grid-cols-3 gap-2 text-center mb-4">
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+            <p class="text-xs text-slate-500 font-medium">Answered</p>
+            <p id="statAnswered" class="text-lg font-extrabold text-slate-800">0 / 40</p>
+          </div>
+          <div class="bg-green-50 p-2.5 rounded-xl border border-green-100">
+            <p class="text-xs text-green-600 font-medium">Correct</p>
+            <p id="statCorrect" class="text-lg font-extrabold text-green-700">0</p>
+          </div>
+          <div class="bg-red-50 p-2.5 rounded-xl border border-red-100">
+            <p class="text-xs text-red-600 font-medium">Incorrect</p>
+            <p id="statIncorrect" class="text-lg font-extrabold text-red-700">0</p>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-1">
+          <div id="progressBar" class="bg-brand-navy h-full w-0 transition-all duration-300"></div>
+        </div>
+        <div class="flex justify-between text-xs text-slate-500 font-semibold">
+          <span>Progress</span>
+          <span id="progressPercent">0%</span>
+        </div>
+      </div>
+
+      <!-- Question Palette / Navigator Grid -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i class="fa-solid fa-list-ol text-brand"></i> Questions Navigator
+          </h3>
+          <span class="text-xs font-medium text-slate-400">Click to jump</span>
+        </div>
+
+        <!-- Quick Legend -->
+        <div class="flex items-center gap-3 text-xs text-slate-600 mb-3 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 border border-slate-400"></span> Current</div>
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Correct</div>
+          <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Wrong</div>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="qGrid" class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2 overflow-y-auto max-h-[360px] p-1">
+          <!-- Dynamic 40 Navigator buttons injected here -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Interactive Explanation Modal -->
+  <div id="resultModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl transform scale-95 transition-all duration-300 border border-slate-100" id="modalBox">
+      
+      <!-- Status Icon & Title Header -->
+      <div class="text-center mb-4">
+        <div id="modalIconContainer" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-black">
+          <!-- Dynamic Icon -->
+        </div>
+        <h3 id="modalTitle" class="text-2xl font-extrabold tracking-tight">
+          <!-- Dynamic Title -->
+        </h3>
+        <p id="modalAnswerBadge" class="text-xs font-bold uppercase tracking-wider mt-1 px-3 py-1 rounded-full inline-block">
+          <!-- Dynamic badge -->
+        </p>
+      </div>
+
+      <!-- Correct Answer Highlight Box -->
+      <div id="correctAnswerBox" class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mb-4">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Correct Answer:</p>
+        <p id="modalCorrectText" class="text-sm sm:text-base font-bold text-slate-900 code-font">
+          <!-- Text -->
+        </p>
+      </div>
+
+      <!-- Step-by-Step Explanation -->
+      <div class="mb-6">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb text-yellow-500"></i> SQL Explanation & Logic:
+        </p>
+        <div id="modalExplanation" class="text-sm text-slate-600 leading-relaxed bg-blue-50/50 border border-blue-100 rounded-xl p-4 code-font">
+          <!-- Explanation injected -->
+        </div>
+      </div>
+
+      <!-- Actions Footer -->
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-3 px-4 rounded-xl font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition text-sm">
+          Close Window
+        </button>
+        <button id="modalNextBtn" onclick="closeModal(); navigateQuestion(1);" class="flex-1 py-3 px-4 rounded-xl font-bold bg-brand-navy hover:bg-brand text-white transition text-sm flex items-center justify-center gap-2">
+          Next Question <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Comprehensive Database of 40 Questions covering all SQL categories requested
+    const questions = [
+      // 1. DQL - LIMIT / OFFSET (From Reference Image)
+      {
+        id: 1,
+        topic: "DQL",
+        level: "Basic",
+        instruction: "You have this Employees table:",
+        tableHeaders: ["EmployeeID", "EmployeeName", "Department"],
+        tableRows: [
+          ["1", "Alice", "HR"],
+          ["2", "Brian", "IT"],
+          ["3", "Carol", "Sales"],
+          ["4", "David", "IT"],
+          ["5", "Emma", "Finance"],
+          ["6", "Frank", "HR"]
+        ],
+        query: `SELECT *\nFROM Employees\nORDER BY EmployeeID\nLIMIT 2 OFFSET 3;`,
+        prompt: "Which rows will this return?",
+        options: [
+          { key: "A", text: "David and Emma" },
+          { key: "B", text: "Carol and David" },
+          { key: "C", text: "Emma and Frank" },
+          { key: "D", text: "Alice and Brian" }
+        ],
+        correct: "A",
+        explanation: "<b>LIMIT 2</b> restricts the output to 2 rows. <b>OFFSET 3</b> skips the first 3 rows (1: Alice, 2: Brian, 3: Carol). The query starts returning rows from row 4 (David) and row 5 (Emma)."
+      },
+      // 2. DDL - CREATE TABLE
+      {
+        id: 2,
+        topic: "DDL",
+        level: "Basic",
+        instruction: "Consider creating a new table for company products:",
+        tableHeaders: ["Column", "Data Type", "Constraint"],
+        tableRows: [
+          ["ProductID", "INT", "PRIMARY KEY"],
+          ["ProductName", "VARCHAR(50)", "NOT NULL"],
+          ["Price", "DECIMAL(10,2)", "DEFAULT 0.00"]
+        ],
+        query: `CREATE TABLE Products (\n  ProductID INT PRIMARY KEY,\n  ProductName VARCHAR(50) NOT NULL,\n  Price DECIMAL(10,2) DEFAULT 0.00\n);`,
+        prompt: "What happens if you insert a row without specifying a Price?",
+        options: [
+          { key: "A", text: "It throws a NULL value constraint error" },
+          { key: "B", text: "The Price automatically defaults to 0.00" },
+          { key: "C", text: "The insertion fails completely" },
+          { key: "D", text: "The Price column will store NULL" }
+        ],
+        correct: "B",
+        explanation: "The column definition includes <b>DEFAULT 0.00</b>. When no explicit value is provided during an INSERT statement for Price, SQL automatically populates it with 0.00."
+      },
+      // 3. DDL - ALTER TABLE
+      {
+        id: 3,
+        topic: "DDL",
+        level: "Basic",
+        instruction: "You have an existing Employees table.",
+        tableHeaders: ["EmployeeID", "EmployeeName"],
+        tableRows: [
+          ["101", "Sarah"],
+          ["102", "Alex"]
+        ],
+        query: `ALTER TABLE Employees\nADD Email VARCHAR(100);`,
+        prompt: "What will be the value of the Email column for existing employees (Sarah & Alex)?",
+        options: [
+          { key: "A", text: "Empty string ''" },
+          { key: "B", text: "NULL" },
+          { key: "C", text: "An error is raised because no default value was set" },
+          { key: "D", text: "0" }
+        ],
+        correct: "B",
+        explanation: "When adding a new column with <b>ALTER TABLE ADD</b> without specifying a DEFAULT clause, existing rows in the table are automatically assigned a <b>NULL</b> value for that column."
+      },
+      // 4. DDL - TRUNCATE vs DROP vs DELETE
+      {
+        id: 4,
+        topic: "DDL",
+        level: "Intermediate",
+        instruction: "You need to quickly clear all data from the Logs table while keeping the structure intact.",
+        tableHeaders: ["LogID", "Message", "Timestamp"],
+        tableRows: [
+          ["1", "User login", "2026-10-01"],
+          ["2", "Payment success", "2026-10-02"]
+        ],
+        query: `TRUNCATE TABLE Logs;`,
+        prompt: "Which statement best describes the effect of TRUNCATE TABLE?",
+        options: [
+          { key: "A", text: "Deletes rows one by one and triggers DELETE triggers" },
+          { key: "B", text: "Removes all rows and deletes the table schema from database" },
+          { key: "C", text: "Removes all rows quickly without deleting the table structure" },
+          { key: "D", text: "Only deletes rows created in the current transaction session" }
+        ],
+        correct: "C",
+        explanation: "<b>TRUNCATE TABLE</b> is a DDL command that deallocates data pages to remove all rows rapidly while preserving the table schema/structure. Unlike DELETE, TRUNCATE cannot be rolled back in some legacy DBMS and doesn't fire per-row triggers."
+      },
+      // 5. DML - INSERT INTO
+      {
+        id: 5,
+        topic: "DML",
+        level: "Basic",
+        instruction: "You have a Customers table with auto-increment ID.",
+        tableHeaders: ["CustomerID", "Name", "City"],
+        tableRows: [
+          ["1", "John Doe", "New York"]
+        ],
+        query: `INSERT INTO Customers (Name, City)\nVALUES ('Maria Garcia', 'Madrid');`,
+        prompt: "What will be the state of the Customers table after execution?",
+        options: [
+          { key: "A", text: "Error because CustomerID was not supplied" },
+          { key: "B", text: "A new row is added with auto-generated CustomerID = 2" },
+          { key: "C", text: "John Doe's row gets overwritten with Maria Garcia" },
+          { key: "D", text: "Maria Garcia is inserted with CustomerID = 0" }
+        ],
+        correct: "B",
+        explanation: "When explicit target columns are specified in <b>INSERT INTO</b>, primary keys set to Auto-Increment/SERIAL generate the next sequential identifier automatically (CustomerID = 2)."
+      },
+      // 6. DML - UPDATE with WHERE
+      {
+        id: 6,
+        topic: "DML",
+        level: "Basic",
+        instruction: "You have this Employees table with salaries:",
+        tableHeaders: ["EmployeeID", "Name", "Department", "Salary"],
+        tableRows: [
+          ["1", "Alice", "IT", "60000"],
+          ["2", "Bob", "HR", "50000"],
+          ["3", "Charlie", "IT", "65000"]
+        ],
+        query: `UPDATE Employees\nSET Salary = Salary + 5000\nWHERE Department = 'IT';`,
+        prompt: "Whose salary gets updated?",
+        options: [
+          { key: "A", text: "Alice only" },
+          { key: "B", text: "Bob only" },
+          { key: "C", text: "Alice and Charlie" },
+          { key: "D", text: "All employees (Alice, Bob, Charlie)" }
+        ],
+        correct: "C",
+        explanation: "The <b>WHERE Department = 'IT'</b> filter restricts the update to rows where Department is 'IT'. Alice ($65,000) and Charlie ($70,000) get updated, while Bob remains unchanged."
+      },
+      // 7. DML - DELETE without WHERE
+      {
+        id: 7,
+        topic: "DML",
+        level: "Intermediate",
+        instruction: "You run the following SQL command on orders:",
+        tableHeaders: ["OrderID", "Amount", "Status"],
+        tableRows: [
+          ["501", "120.00", "Shipped"],
+          ["502", "85.50", "Pending"]
+        ],
+        query: `DELETE FROM Orders;`,
+        prompt: "What is the result of running this statement?",
+        options: [
+          { key: "A", text: "Deletes only the first row in Orders" },
+          { key: "B", text: "Deletes all rows in Orders table" },
+          { key: "C", text: "Deletes the Orders table structure from schema" },
+          { key: "D", text: "Fails with a syntax error because WHERE is required" }
+        ],
+        correct: "B",
+        explanation: "Executing a <b>DELETE FROM Table</b> without a <b>WHERE clause</b> removes ALL rows row-by-row from the target table while maintaining the table structure."
+      },
+      // 8. DQL - DISTINCT Operator
+      {
+        id: 8,
+        topic: "Distinct",
+        level: "Basic",
+        instruction: "Given this Sales table containing duplicate department entries:",
+        tableHeaders: ["SaleID", "Department", "Region"],
+        tableRows: [
+          ["1", "Electronics", "North"],
+          ["2", "Clothing", "South"],
+          ["3", "Electronics", "East"],
+          ["4", "Electronics", "North"]
+        ],
+        query: `SELECT DISTINCT Department\nFROM Sales;`,
+        prompt: "How many rows will this query return?",
+        options: [
+          { key: "A", text: "4 rows" },
+          { key: "B", text: "2 rows ('Electronics', 'Clothing')" },
+          { key: "C", text: "3 rows" },
+          { key: "D", text: "1 row ('Electronics')" }
+        ],
+        correct: "B",
+        explanation: "<b>DISTINCT</b> eliminates all duplicate rows in the result set. Since 'Electronics' appears 3 times and 'Clothing' 1 time, it returns unique values: 'Electronics' and 'Clothing' (2 rows)."
+      },
+      // 9. DQL - DISTINCT across Multiple Columns
+      {
+        id: 9,
+        topic: "Distinct",
+        level: "Intermediate",
+        instruction: "You have a Customers log table:",
+        tableHeaders: ["City", "Country"],
+        tableRows: [
+          ["Paris", "France"],
+          ["Paris", "Texas"],
+          ["Paris", "France"],
+          ["London", "UK"]
+        ],
+        query: `SELECT DISTINCT City, Country\nFROM Locations;`,
+        prompt: "Which combinations will be returned?",
+        options: [
+          { key: "A", text: "Paris, London (2 rows)" },
+          { key: "B", text: "(Paris, France), (Paris, Texas), (London, UK) (3 rows)" },
+          { key: "C", text: "(Paris, France), (London, UK) (2 rows)" },
+          { key: "D", text: "4 rows total" }
+        ],
+        correct: "B",
+        explanation: "When <b>DISTINCT</b> is used with multiple columns (City, Country), duplicates are determined by unique COMBINATIONS of both columns. 'Paris, France' duplicate is filtered out, resulting in 3 unique pairs."
+      },
+      // 10. Operators - Comparison Operators (BETWEEN)
+      {
+        id: 10,
+        topic: "Operators",
+        level: "Basic",
+        instruction: "You have this Inventory table:",
+        tableHeaders: ["Item", "Quantity"],
+        tableRows: [
+          ["Laptops", "10"],
+          ["Phones", "25"],
+          ["Tablets", "15"],
+          ["Monitors", "30"]
+        ],
+        query: `SELECT Item\nFROM Inventory\nWHERE Quantity BETWEEN 10 AND 25;`,
+        prompt: "Which items are returned by the BETWEEN clause?",
+        options: [
+          { key: "A", text: "Phones and Tablets only (strictly between 10 and 25)" },
+          { key: "B", text: "Laptops, Phones, and Tablets (inclusive of 10 and 25)" },
+          { key: "C", text: "Monitors only" },
+          { key: "D", text: "Laptops and Monitors" }
+        ],
+        correct: "B",
+        explanation: "In SQL, the <b>BETWEEN operator is INCLUSIVE</b> of both boundary values (Quantity >= 10 AND Quantity <= 25). Thus, 10 (Laptops), 25 (Phones), and 15 (Tablets) match."
+      },
+      // 11. Operators - LIKE Wildcards (% and _)
+      {
+        id: 11,
+        topic: "Operators",
+        level: "Basic",
+        instruction: "You have a Contacts table:",
+        tableHeaders: ["ContactName"],
+        tableRows: [
+          ["Anna"],
+          ["Alexander"],
+          ["Amanda"],
+          ["Albert"]
+        ],
+        query: `SELECT ContactName\nFROM Contacts\nWHERE ContactName LIKE 'A_a%';`,
+        prompt: "Which names match this wildcard pattern?",
+        options: [
+          { key: "A", text: "Anna and Amanda" },
+          { key: "B", text: "Alexander and Albert" },
+          { key: "C", text: "Amanda only" },
+          { key: "D", text: "Anna only" },
+        ],
+        correct: "A",
+        explanation: "Pattern <b>'A_a%'</b> means: Starts with 'A', followed by EXACTLY ONE wildcard character '_', followed by 'a', and '%' (0 or more trailing characters). 'Anna' (A-n-a) and 'Amanda' (A-m-a-nda) match!"
+      },
+      // 12. Operators - Logical Operators (AND, OR, NOT)
+      {
+        id: 12,
+        topic: "Operators",
+        level: "Intermediate",
+        instruction: "You have this Students score table:",
+        tableHeaders: ["Name", "Grade", "Age"],
+        tableRows: [
+          ["Mark", "A", "18"],
+          ["Lucy", "B", "20"],
+          ["John", "A", "22"],
+          ["Kate", "C", "19"]
+        ],
+        query: `SELECT Name\nFROM Students\nWHERE Grade = 'A' OR (Grade = 'B' AND Age < 20);`,
+        prompt: "Who satisfies this logical expression?",
+        options: [
+          { key: "A", text: "Mark and John" },
+          { key: "B", text: "Mark, Lucy, and John" },
+          { key: "C", text: "John and Lucy" },
+          { key: "D", text: "Mark only" }
+        ],
+        correct: "A",
+        explanation: "Grade = 'A' evaluates to True for Mark & John. (Grade = 'B' AND Age < 20) evaluates to False for Lucy because her age is 20 (not < 20). So only Mark and John pass."
+      },
+      // 13. Operators - IN Operator
+      {
+        id: 13,
+        topic: "Operators",
+        level: "Basic",
+        instruction: "Consider the Cities table:",
+        tableHeaders: ["CityID", "CityName", "Country"],
+        tableRows: [
+          ["1", "Tokyo", "Japan"],
+          ["2", "Berlin", "Germany"],
+          ["3", "Toronto", "Canada"],
+          ["4", "Kyoto", "Japan"]
+        ],
+        query: `SELECT CityName\nFROM Cities\nWHERE Country IN ('Japan', 'Canada');`,
+        prompt: "Which cities are selected?",
+        options: [
+          { key: "A", text: "Tokyo and Kyoto" },
+          { key: "B", text: "Tokyo, Toronto, and Kyoto" },
+          { key: "C", text: "Berlin and Toronto" },
+          { key: "D", text: "Toronto only" }
+        ],
+        correct: "B",
+        explanation: "The <b>IN ('Japan', 'Canada')</b> operator functions as a shorthand for 'Country = Japan OR Country = Canada'. Tokyo (Japan), Toronto (Canada), and Kyoto (Japan) are selected."
+      },
+      // 14. Operators - NOT IN Operator with NULL caveat
+      {
+        id: 14,
+        topic: "Operators",
+        level: "Advanced",
+        instruction: "You have a list of active order statuses:",
+        tableHeaders: ["OrderID", "Code"],
+        tableRows: [
+          ["10", "1"],
+          ["11", "2"],
+          ["12", "3"]
+        ],
+        query: `SELECT OrderID\nFROM Orders\nWHERE Code NOT IN (1, NULL);`,
+        prompt: "What does this query return?",
+        options: [
+          { key: "A", text: "OrderID 11 and 12" },
+          { key: "B", text: "OrderID 10" },
+          { key: "C", text: "0 rows (Empty Set)" },
+          { key: "D", text: "OrderID 10, 11, and 12" }
+        ],
+        correct: "C",
+        explanation: "<b>CRITICAL SQL GOTCHA:</b> `x NOT IN (1, NULL)` expands logically to `x != 1 AND x != NULL`. Because any comparison with NULL yields UNKNOWN, the entire WHERE condition evaluates to UNKNOWN for all rows, returning an <b>empty set</b>!"
+      },
+      // 15. Joins - INNER JOIN
+      {
+        id: 15,
+        topic: "Joins",
+        level: "Basic",
+        instruction: "Given Table A (Employees) and Table B (Departments):",
+        tableHeaders: ["EmpName", "DeptID", "||", "DeptID", "DeptName"],
+        tableRows: [
+          ["Alice", "10", "||", "10", "Engineering"],
+          ["Bob", "20", "||", "20", "Marketing"],
+          ["Charlie", "30", "||", "40", "Sales"]
+        ],
+        query: `SELECT EmpName, DeptName\nFROM Employees e\nINNER JOIN Departments d ON e.DeptID = d.DeptID;`,
+        prompt: "Which pairs will be present in the query result?",
+        options: [
+          { key: "A", text: "(Alice, Engineering), (Bob, Marketing)" },
+          { key: "B", text: "(Alice, Engineering), (Bob, Marketing), (Charlie, NULL)" },
+          { key: "C", text: "(Charlie, Sales)" },
+          { key: "D", text: "All 3 employees with matched or unmatched departments" }
+        ],
+        correct: "A",
+        explanation: "<b>INNER JOIN</b> returns only rows where there is a matching key in BOTH tables. DeptID 10 and 20 match in both tables. Charlie (DeptID 30) and Sales (DeptID 40) have no match and are excluded."
+      },
+      // 16. Joins - LEFT JOIN
+      {
+        id: 16,
+        topic: "Joins",
+        level: "Basic",
+        instruction: "Using the same Employees and Departments tables:",
+        tableHeaders: ["EmpName", "DeptID", "||", "DeptID", "DeptName"],
+        tableRows: [
+          ["Alice", "10", "||", "10", "Engineering"],
+          ["Bob", "20", "||", "20", "Marketing"],
+          ["Charlie", "30", "||", "40", "Sales"]
+        ],
+        query: `SELECT EmpName, DeptName\nFROM Employees e\nLEFT JOIN Departments d ON e.DeptID = d.DeptID;`,
+        prompt: "What will be returned for Charlie's DeptName?",
+        options: [
+          { key: "A", text: "Sales" },
+          { key: "B", text: "NULL" },
+          { key: "C", text: "Charlie's row will be completely excluded" },
+          { key: "D", text: "Error" }
+        ],
+        correct: "B",
+        explanation: "<b>LEFT JOIN</b> retains ALL rows from the left table (Employees). Since Charlie has DeptID 30 which does not exist in Departments, the columns from Departments (DeptName) are filled with <b>NULL</b>."
+      },
+      // 17. Joins - RIGHT JOIN
+      {
+        id: 17,
+        topic: "Joins",
+        level: "Intermediate",
+        instruction: "Same Employees (left) and Departments (right) tables:",
+        tableHeaders: ["EmpName", "DeptID", "||", "DeptID", "DeptName"],
+        tableRows: [
+          ["Alice", "10", "||", "10", "Engineering"],
+          ["Bob", "20", "||", "20", "Marketing"],
+          ["Charlie", "30", "||", "40", "Sales"]
+        ],
+        query: `SELECT e.EmpName, d.DeptName\nFROM Employees e\nRIGHT JOIN Departments d ON e.DeptID = d.DeptID;`,
+        prompt: "Which rows are included in the result?",
+        options: [
+          { key: "A", text: "(Alice, Eng), (Bob, Mkt), (Charlie, NULL)" },
+          { key: "B", text: "(Alice, Eng), (Bob, Mkt), (NULL, Sales)" },
+          { key: "C", text: "(Alice, Eng), (Bob, Mkt)" },
+          { key: "D", text: "(NULL, Eng), (NULL, Mkt), (Charlie, Sales)" }
+        ],
+        correct: "B",
+        explanation: "<b>RIGHT JOIN</b> guarantees all rows from the right table (Departments) are included. Sales (DeptID 40) has no corresponding employee in Employees, so EmpName appears as <b>NULL</b>."
+      },
+      // 18. Joins - FULL OUTER JOIN
+      {
+        id: 18,
+        topic: "Joins",
+        level: "Intermediate",
+        instruction: "Using Employees and Departments tables with unmatched records on both sides:",
+        tableHeaders: ["EmpName", "DeptID", "||", "DeptID", "DeptName"],
+        tableRows: [
+          ["Alice", "10", "||", "10", "Engineering"],
+          ["Charlie", "30", "||", "40", "Sales"]
+        ],
+        query: `SELECT e.EmpName, d.DeptName\nFROM Employees e\nFULL OUTER JOIN Departments d ON e.DeptID = d.DeptID;`,
+        prompt: "How many total rows will be returned by FULL OUTER JOIN?",
+        options: [
+          { key: "A", text: "1 row (Alice)" },
+          { key: "B", text: "2 rows" },
+          { key: "C", text: "3 rows (Alice matched, Charlie unmatched, Sales unmatched)" },
+          { key: "D", text: "4 rows" }
+        ],
+        correct: "C",
+        explanation: "<b>FULL OUTER JOIN</b> combines the results of both LEFT and RIGHT joins. It includes matched rows (Alice), left unmatched rows (Charlie with NULL DeptName), and right unmatched rows (NULL EmpName with Sales). Total = 3 rows."
+      },
+      // 19. Joins - CROSS JOIN (Cartesian Product)
+      {
+        id: 19,
+        topic: "Joins",
+        level: "Basic",
+        instruction: "You have Table A with 3 rows and Table B with 4 rows:",
+        tableHeaders: ["Colors (3 rows)", "||", "Sizes (4 rows)"],
+        tableRows: [
+          ["Red", "||", "Small"],
+          ["Blue", "||", "Medium"],
+          ["Green", "||", "Large"],
+          ["-", "||", "X-Large"]
+        ],
+        query: `SELECT *\nFROM Colors\nCROSS JOIN Sizes;`,
+        prompt: "How many rows will the CROSS JOIN return?",
+        options: [
+          { key: "A", text: "7 rows (3 + 4)" },
+          { key: "B", text: "12 rows (3 x 4)" },
+          { key: "C", text: "4 rows" },
+          { key: "D", text: "3 rows" }
+        ],
+        correct: "B",
+        explanation: "A <b>CROSS JOIN</b> generates the Cartesian Product of both tables. Every row from Colors is paired with every row from Sizes (3 x 4 = 12 total rows)."
+      },
+      // 20. Joins - SELF JOIN
+      {
+        id: 20,
+        topic: "Joins",
+        level: "Advanced",
+        instruction: "You have an Employees table where ManagerID refers to EmployeeID:",
+        tableHeaders: ["EmpID", "EmpName", "ManagerID"],
+        tableRows: [
+          ["1", "Boss", "NULL"],
+          ["2", "Alice", "1"],
+          ["3", "Bob", "1"]
+        ],
+        query: `SELECT e.EmpName AS Employee, m.EmpName AS Manager\nFROM Employees e\nINNER JOIN Employees m ON e.ManagerID = m.EmpID;`,
+        prompt: "Which employee names will appear in the 'Employee' column?",
+        options: [
+          { key: "A", text: "Boss, Alice, Bob" },
+          { key: "B", text: "Alice and Bob" },
+          { key: "C", text: "Boss only" },
+          { key: "D", text: "Alice only" }
+        ],
+        correct: "B",
+        explanation: "A <b>SELF JOIN</b> joins a table to itself. Since 'Boss' has ManagerID = NULL, the INNER JOIN condition `e.ManagerID = m.EmpID` fails for Boss. Only Alice and Bob have valid ManagerIDs matching Boss (EmpID 1)."
+      },
+      // 21. Nested Queries - Scalar Subquery in WHERE
+      {
+        id: 21,
+        topic: "Nested",
+        level: "Intermediate",
+        instruction: "You have a Salaries table:",
+        tableHeaders: ["EmpName", "Salary"],
+        tableRows: [
+          ["Alice", "50000"],
+          ["Bob", "80000"],
+          ["Charlie", "60000"]
+        ],
+        query: `SELECT EmpName\nFROM Salaries\nWHERE Salary > (\n  SELECT AVG(Salary) FROM Salaries\n);`,
+        prompt: "Average salary is 63,333. Who is selected?",
+        options: [
+          { key: "A", text: "Bob only" },
+          { key: "B", text: "Bob and Charlie" },
+          { key: "C", text: "Alice and Bob" },
+          { key: "D", text: "Charlie only" }
+        ],
+        correct: "A",
+        explanation: "The subquery `SELECT AVG(Salary)` evaluates to 63,333.33. The main query filters for employees with `Salary > 63333.33`. Only Bob ($80,000) satisfies this condition."
+      },
+      // 22. Nested Queries - Subquery with IN
+      {
+        id: 22,
+        topic: "Nested",
+        level: "Intermediate",
+        instruction: "Given Orders and HighPriorityDepts tables:",
+        tableHeaders: ["OrderID", "DeptID", "||", "DeptID"],
+        tableRows: [
+          ["101", "1", "||", "1"],
+          ["102", "2", "||", "3"],
+          ["103", "3", "||", "-"]
+        ],
+        query: `SELECT OrderID\nFROM Orders\nWHERE DeptID IN (\n  SELECT DeptID FROM HighPriorityDepts\n);`,
+        prompt: "Which OrderIDs will be returned?",
+        options: [
+          { key: "A", text: "101 only" },
+          { key: "B", text: "101 and 103" },
+          { key: "C", text: "102 only" },
+          { key: "D", text: "101, 102, and 103" }
+        ],
+        correct: "B",
+        explanation: "The subquery returns DeptIDs `(1, 3)`. The main query filters `WHERE DeptID IN (1, 3)`. Order 101 (Dept 1) and Order 103 (Dept 3) match."
+      },
+      // 23. Nested Queries - EXISTS Operator
+      {
+        id: 23,
+        topic: "Nested",
+        level: "Advanced",
+        instruction: "You have Customers and Orders tables:",
+        tableHeaders: ["CustID", "CustName", "||", "OrderID", "CustID"],
+        tableRows: [
+          ["1", "Alice", "||", "501", "1"],
+          ["2", "Bob", "||", "-", "-"]
+        ],
+        query: `SELECT CustName\nFROM Customers c\nWHERE EXISTS (\n  SELECT 1 FROM Orders o WHERE o.CustID = c.CustID\n);`,
+        prompt: "Which customers will be returned?",
+        options: [
+          { key: "A", text: "Alice only" },
+          { key: "B", text: "Bob only" },
+          { key: "C", text: "Alice and Bob" },
+          { key: "D", text: "Neither" }
+        ],
+        correct: "A",
+        explanation: "<b>EXISTS</b> checks for the presence of at least one matching row in the subquery. For Alice (CustID 1), order 501 exists (returns TRUE). For Bob (CustID 2), no order exists (returns FALSE). So only Alice is returned."
+      },
+      // 24. Nested Queries - Correlated Subquery
+      {
+        id: 24,
+        topic: "Nested",
+        level: "Advanced",
+        instruction: "Employees table with department salaries:",
+        tableHeaders: ["EmpName", "DeptID", "Salary"],
+        tableRows: [
+          ["Alice", "IT", "70000"],
+          ["Bob", "IT", "90000"],
+          ["Carol", "HR", "50000"]
+        ],
+        query: `SELECT e.EmpName\nFROM Employees e\nWHERE e.Salary > (\n  SELECT AVG(s.Salary)\n  FROM Employees s\n  WHERE s.DeptID = e.DeptID\n);`,
+        prompt: "IT avg is 80,000; HR avg is 50,000. Who is selected?",
+        options: [
+          { key: "A", text: "Alice and Bob" },
+          { key: "B", text: "Bob only" },
+          { key: "C", text: "Carol only" },
+          { key: "D", text: "Bob and Carol" }
+        ],
+        correct: "B",
+        explanation: "This is a <b>Correlated Subquery</b> because the inner query refers to `e.DeptID` from outer query. For IT: avg salary is 80,000. Bob ($90k) > 80k. Alice ($70k) is not. For HR: avg is 50,000; Carol ($50k) is NOT strictly > 50,000. Thus, Bob only."
+      },
+      // 25. DQL - GROUP BY and COUNT
+      {
+        id: 25,
+        topic: "DQL",
+        level: "Basic",
+        instruction: "You have a Projects assignment table:",
+        tableHeaders: ["EmpID", "ProjectName"],
+        tableRows: [
+          ["101", "Web App"],
+          ["101", "Mobile App"],
+          ["102", "Database"],
+          ["101", "API Design"]
+        ],
+        query: `SELECT EmpID, COUNT(*) as ProjectCount\nFROM Projects\nGROUP BY EmpID;`,
+        prompt: "What will be the ProjectCount for EmpID 101?",
+        options: [
+          { key: "A", text: "1" },
+          { key: "B", text: "2" },
+          { key: "C", text: "3" },
+          { key: "D", text: "4" }
+        ],
+        correct: "C",
+        explanation: "<b>GROUP BY EmpID</b> groups all rows by employee ID. EmpID 101 appears in 3 separate rows (Web App, Mobile App, API Design), so `COUNT(*)` returns <b>3</b>."
+      },
+      // 26. DQL - HAVING Clause vs WHERE
+      {
+        id: 26,
+        topic: "DQL",
+        level: "Intermediate",
+        instruction: "Consider this Store Sales dataset:",
+        tableHeaders: ["Store", "TotalSales"],
+        tableRows: [
+          ["Store A", "100"],
+          ["Store A", "200"],
+          ["Store B", "50"]
+        ],
+        query: `SELECT Store, SUM(TotalSales)\nFROM StoreSales\nGROUP BY Store\nHAVING SUM(TotalSales) > 150;`,
+        prompt: "Which Store(s) will pass the HAVING filter?",
+        options: [
+          { key: "A", text: "Store A only" },
+          { key: "B", text: "Store B only" },
+          { key: "C", text: "Both Store A and Store B" },
+          { key: "D", text: "Neither" }
+        ],
+        correct: "A",
+        explanation: "Store A sum is 100 + 200 = 300. Store B sum is 50. The <b>HAVING SUM(TotalSales) > 150</b> condition filters aggregate groups AFTER grouping, selecting Store A only."
+      },
+      // 27. DQL - ORDER BY Multiple Columns
+      {
+        id: 27,
+        topic: "DQL",
+        level: "Basic",
+        instruction: "Given this Students table:",
+        tableHeaders: ["Name", "Grade", "Age"],
+        tableRows: [
+          ["Alice", "B", "20"],
+          ["Bob", "A", "22"],
+          ["Charlie", "A", "19"]
+        ],
+        query: `SELECT Name\nFROM Students\nORDER BY Grade ASC, Age DESC;`,
+        prompt: "Who will be the first student in the result list?",
+        options: [
+          { key: "A", text: "Alice" },
+          { key: "B", text: "Bob" },
+          { key: "C", text: "Charlie" },
+          { key: "D", text: "Bob and Charlie tied" }
+        ],
+        correct: "B",
+        explanation: "Sorting by Grade ASC puts 'A' grades first (Bob, Charlie). Among 'A' grade students, sorting by Age DESC places the highest age (Bob: 22) before Charlie (19). Bob is first."
+      },
+      // 28. DQL - NULL Handling with IS NULL
+      {
+        id: 28,
+        topic: "DQL",
+        level: "Basic",
+        instruction: "You have a Tasks table with optional completion dates:",
+        tableHeaders: ["TaskID", "CompletedDate"],
+        tableRows: [
+          ["1", "2026-01-10"],
+          ["2", "NULL"],
+          ["3", "NULL"]
+        ],
+        query: `SELECT TaskID\nFROM Tasks\nWHERE CompletedDate IS NULL;`,
+        prompt: "Which tasks will be retrieved?",
+        options: [
+          { key: "A", text: "TaskID 1" },
+          { key: "B", text: "TaskID 2 and 3" },
+          { key: "C", text: "TaskID 2 only" },
+          { key: "D", text: "No rows returned" }
+        ],
+        correct: "B",
+        explanation: "In SQL, testing for missing/unknown values requires <b>IS NULL</b> (you cannot use `= NULL`). Tasks 2 and 3 have NULL completion dates."
+      },
+      // 29. Operators - Logical Operator Precedence (AND over OR)
+      {
+        id: 29,
+        topic: "Operators",
+        level: "Intermediate",
+        instruction: "Observe the following conditional logic on Products:",
+        tableHeaders: ["Product", "Category", "Price"],
+        tableRows: [
+          ["P1", "Tech", "100"],
+          ["P2", "Home", "50"],
+          ["P3", "Tech", "10"]
+        ],
+        query: `SELECT Product\nFROM Products\nWHERE Category = 'Tech' OR Category = 'Home' AND Price > 80;`,
+        prompt: "Which products will be returned? (Note operator precedence!)",
+        options: [
+          { key: "A", text: "P1 only" },
+          { key: "B", text: "P1 and P3" },
+          { key: "C", text: "P1, P2, and P3" },
+          { key: "D", text: "P1 and P2" }
+        ],
+        correct: "B",
+        explanation: "<b>AND has higher precedence than OR!</b> The query is evaluated as: `Category = 'Tech' OR (Category = 'Home' AND Price > 80)`. P1 ('Tech') is TRUE. P3 ('Tech') is TRUE. P2 ('Home' AND 50 > 80) is FALSE. So P1 & P3 are returned."
+      },
+      // 30. DDL - FOREIGN KEY Constraint Drop Behavior
+      {
+        id: 30,
+        topic: "DDL",
+        level: "Advanced",
+        instruction: "Orders table references Customers table via Foreign Key:",
+        tableHeaders: ["FK Definition"],
+        tableRows: [
+          ["FOREIGN KEY (CustID) REFERENCES Customers(CustID) ON DELETE CASCADE"]
+        ],
+        query: `DELETE FROM Customers WHERE CustID = 5;`,
+        prompt: "What happens to orders belonging to CustID = 5 in Orders table?",
+        options: [
+          { key: "A", text: "An error prevents deleting the customer" },
+          { key: "B", text: "CustID in Orders is set to NULL" },
+          { key: "C", text: "All orders associated with CustID = 5 are automatically deleted" },
+          { key: "D", text: "Nothing happens to Orders table" }
+        ],
+        correct: "C",
+        explanation: "<b>ON DELETE CASCADE</b> automatically deletes child records (in Orders table) whenever the corresponding parent record (in Customers table) is deleted."
+      },
+      // 31. DML - INSERT INTO ... SELECT
+      {
+        id: 31,
+        topic: "DML",
+        level: "Intermediate",
+        instruction: "Archiving inactive users:",
+        tableHeaders: ["Users", "||", "ArchivedUsers"],
+        tableRows: [
+          ["ID, Name, Status", "||", "ID, Name"]
+        ],
+        query: `INSERT INTO ArchivedUsers (ID, Name)\nSELECT ID, Name\nFROM Users\nWHERE Status = 'Inactive';`,
+        prompt: "What does this statement do?",
+        options: [
+          { key: "A", text: "Copies inactive users from Users table into ArchivedUsers" },
+          { key: "B", text: "Moves inactive users and deletes them from Users" },
+          { key: "C", text: "Throws a syntax error" },
+          { key: "D", text: "Creates a new table named ArchivedUsers" }
+        ],
+        correct: "A",
+        explanation: "<b>INSERT INTO ... SELECT</b> copies rows matching the query criteria from one table into an existing target table."
+      },
+      // 32. Operators - CASE WHEN Conditional Statement
+      {
+        id: 32,
+        topic: "Operators",
+        level: "Intermediate",
+        instruction: "You have a Scores table:",
+        tableHeaders: ["Student", "Score"],
+        tableRows: [
+          ["Mark", "85"],
+          ["Jane", "45"]
+        ],
+        query: `SELECT Student,\n  CASE\n    WHEN Score >= 50 THEN 'Pass'\n    ELSE 'Fail'\n  END AS Result\nFROM Scores;`,
+        prompt: "What will be the Result for Mark and Jane?",
+        options: [
+          { key: "A", text: "Mark: Pass, Jane: Fail" },
+          { key: "B", text: "Mark: Pass, Jane: Pass" },
+          { key: "C", text: "Mark: Fail, Jane: Fail" },
+          { key: "D", text: "Error" }
+        ],
+        correct: "A",
+        explanation: "<b>CASE WHEN</b> acts as an if-else expression. Mark (85 >= 50) gets 'Pass', Jane (45 < 50) falls into ELSE and gets 'Fail'."
+      },
+      // 33. DQL - Subquery in SELECT Clause (Scalar)
+      {
+        id: 33,
+        topic: "Nested",
+        level: "Advanced",
+        instruction: "You want to show department max salary alongside employee details:",
+        tableHeaders: ["EmpName", "Salary"],
+        tableRows: [
+          ["Alice", "50000"],
+          ["Bob", "70000"]
+        ],
+        query: `SELECT EmpName,\n  (SELECT MAX(Salary) FROM Employees) - Salary AS Diff\nFROM Employees;`,
+        prompt: "Max salary is 70,000. What will Diff be for Alice ($50,000)?",
+        options: [
+          { key: "A", text: "20000" },
+          { key: "B", text: "70000" },
+          { key: "C", text: "0" },
+          { key: "D", text: "-20000" }
+        ],
+        correct: "A",
+        explanation: "The subquery `(SELECT MAX(Salary) FROM Employees)` evaluates to 70000. For Alice: 70000 - 50000 = <b>20000</b>."
+      },
+      // 34. Distinct - COUNT(DISTINCT col)
+      {
+        id: 34,
+        topic: "Distinct",
+        level: "Intermediate",
+        instruction: "Website visits log:",
+        tableHeaders: ["VisitID", "IPAddress"],
+        tableRows: [
+          ["1", "192.168.1.1"],
+          ["2", "192.168.1.2"],
+          ["3", "192.168.1.1"],
+          ["4", "192.168.1.1"]
+        ],
+        query: `SELECT COUNT(DISTINCT IPAddress) AS UniqueVisitors\nFROM Visits;`,
+        prompt: "What value is returned for UniqueVisitors?",
+        options: [
+          { key: "A", text: "4" },
+          { key: "B", text: "2" },
+          { key: "C", text: "1" },
+          { key: "D", text: "3" }
+        ],
+        correct: "B",
+        explanation: "<b>COUNT(DISTINCT IPAddress)</b> counts only unique IP addresses. The distinct IPs are '192.168.1.1' and '192.168.1.2', resulting in a count of <b>2</b>."
+      },
+      // 35. Joins - Multi-table Join
+      {
+        id: 35,
+        topic: "Joins",
+        level: "Advanced",
+        instruction: "Joining 3 tables: Orders -> OrderItems -> Products",
+        tableHeaders: ["Orders", "||", "OrderItems", "||", "Products"],
+        tableRows: [
+          ["OrderID", "||", "OrderID, ProductID", "||", "ProductID, Price"]
+        ],
+        query: `SELECT o.OrderID, p.Price\nFROM Orders o\nJOIN OrderItems oi ON o.OrderID = oi.OrderID\nJOIN Products p ON oi.ProductID = p.ProductID;`,
+        prompt: "How are the three tables linked together?",
+        options: [
+          { key: "A", text: "Orders links directly to Products" },
+          { key: "B", text: "OrderItems acts as a bridge table connecting Orders and Products" },
+          { key: "C", text: "It forms a CROSS JOIN across all 3 tables" },
+          { key: "D", text: "The query syntax is invalid" }
+        ],
+        correct: "B",
+        explanation: "This is a standard multi-table join where OrderItems acts as a junction/bridge table linking Orders (via OrderID) to Products (via ProductID)."
+      },
+      // 36. Operators - UNION vs UNION ALL
+      {
+        id: 36,
+        topic: "Operators",
+        level: "Intermediate",
+        instruction: "Table A has ('Apple', 'Banana'). Table B has ('Banana', 'Cherry').",
+        tableHeaders: ["TableA", "||", "TableB"],
+        tableRows: [
+          ["Apple", "||", "Banana"],
+          ["Banana", "||", "Cherry"]
+        ],
+        query: `SELECT Fruit FROM TableA\nUNION ALL\nSELECT Fruit FROM TableB;`,
+        prompt: "How many total rows are returned by UNION ALL?",
+        options: [
+          { key: "A", text: "3 rows ('Apple', 'Banana', 'Cherry')" },
+          { key: "B", text: "4 rows ('Apple', 'Banana', 'Banana', 'Cherry')" },
+          { key: "C", text: "2 rows" },
+          { key: "D", text: "1 row" }
+        ],
+        correct: "B",
+        explanation: "<b>UNION ALL</b> combines result sets while PRESERVING duplicate entries (4 rows total). Conversely, standard <b>UNION</b> removes duplicates (3 rows)."
+      },
+      // 37. DQL - COALESCE Function
+      {
+        id: 37,
+        topic: "DQL",
+        level: "Intermediate",
+        instruction: "Phone numbers contacts directory:",
+        tableHeaders: ["Name", "HomePhone", "WorkPhone"],
+        tableRows: [
+          ["Alice", "NULL", "555-0199"],
+          ["Bob", "NULL", "NULL"]
+        ],
+        query: `SELECT Name, COALESCE(HomePhone, WorkPhone, 'N/A') AS Contact\nFROM Contacts;`,
+        prompt: "What will be returned as Contact for Alice and Bob?",
+        options: [
+          { key: "A", text: "Alice: 555-0199, Bob: N/A" },
+          { key: "B", text: "Alice: NULL, Bob: N/A" },
+          { key: "C", text: "Alice: 555-0199, Bob: NULL" },
+          { key: "D", text: "Alice: N/A, Bob: N/A" }
+        ],
+        correct: "A",
+        explanation: "<b>COALESCE()</b> returns the FIRST non-NULL value in its parameter list. For Alice, HomePhone is NULL so it evaluates WorkPhone ('555-0199'). For Bob, both phones are NULL so it returns default 'N/A'."
+      },
+      // 38. DDL - Views Definition
+      {
+        id: 38,
+        topic: "DDL",
+        level: "Intermediate",
+        instruction: "Creating a simplified view over a complex join:",
+        tableHeaders: ["View Definition"],
+        tableRows: [
+          ["CREATE VIEW IT_Staff AS SELECT * FROM Employees WHERE Dept = 'IT';"]
+        ],
+        query: `SELECT * FROM IT_Staff;`,
+        prompt: "What is a database VIEW?",
+        options: [
+          { key: "A", text: "A physical copy of the table stored separately on disk" },
+          { key: "B", text: "A virtual table based on the result-set of an SQL statement" },
+          { key: "C", text: "A temporary table deleted when session ends" },
+          { key: "D", text: "An index built to speed up searches" }
+        ],
+        correct: "B",
+        explanation: "A <b>VIEW</b> is a virtual table containing rows and columns defined by an underlying SQL query. It does not store physical data rows itself."
+      },
+      // 39. DML - ROLLBACK Transaction
+      {
+        id: 39,
+        topic: "DML",
+        level: "Advanced",
+        instruction: "Executing transaction steps:",
+        tableHeaders: ["Step", "Command"],
+        tableRows: [
+          ["1", "BEGIN TRANSACTION;"],
+          ["2", "DELETE FROM Accounts;"],
+          ["3", "ROLLBACK;"]
+        ],
+        query: `SELECT COUNT(*) FROM Accounts;`,
+        prompt: "What happens to the rows in Accounts table after ROLLBACK?",
+        options: [
+          { key: "A", text: "All rows are permanently deleted" },
+          { key: "B", text: "The delete operation is undone, leaving all rows intact" },
+          { key: "C", text: "The table structure is dropped" },
+          { key: "D", text: "Accounts table becomes locked" }
+        ],
+        correct: "B",
+        explanation: "<b>ROLLBACK</b> reverts all modifications made within the current uncommitted transaction, restoring the database state to before `BEGIN TRANSACTION`."
+      },
+      // 40. Nested Queries - ALL Operator
+      {
+        id: 40,
+        topic: "Nested",
+        level: "Advanced",
+        instruction: "Comparing salaries against all IT employees:",
+        tableHeaders: ["EmpName", "Salary", "||", "IT Salaries"],
+        tableRows: [
+          ["David", "95000", "||", "60000, 70000, 80000"]
+        ],
+        query: `SELECT EmpName\nFROM Employees\nWHERE Salary > ALL (\n  SELECT Salary FROM Employees WHERE Dept = 'IT'\n);`,
+        prompt: "Will David ($95,000) be selected?",
+        options: [
+          { key: "A", text: "Yes, because $95,000 is greater than ALL IT salaries (max 80k)" },
+          { key: "B", text: "No, because $95,000 is not equal to IT salaries" },
+          { key: "C", text: "Only if David is in the IT department" },
+          { key: "D", text: "Fails with syntax error" }
+        ],
+        correct: "A",
+        explanation: "The <b>> ALL</b> operator requires the expression to be greater than EVERY single value returned by the subquery. Since $95,000 > max(60k, 70k, 80k) = $80,000, David is selected."
+      }
+    ];
+
+    // App State Management
+    let currentIdx = 0;
+    let filteredIndices = questions.map((_, i) => i);
+    let userAnswers = new Array(questions.length).fill(null); // stores { selectedKey, isCorrect }
+
+    // On Page Load Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      renderQuiz();
+      renderGrid();
+      updateStats();
+    });
+
+    // Render Current Question
+    function renderQuiz() {
+      if (filteredIndices.length === 0) {
+        document.getElementById('qSubtitle').textContent = "No questions found";
+        document.getElementById('qPrompt').textContent = "Please adjust your filter options.";
+        document.getElementById('tableContainer').innerHTML = "";
+        document.getElementById('qCodeBlock').textContent = "";
+        document.getElementById('optionsContainer').innerHTML = "";
+        return;
+      }
+
+      const qRealIndex = filteredIndices[currentIdx];
+      const q = questions[qRealIndex];
+
+      // Top Badges & Counters
+      document.getElementById('qIndexText').textContent = `Question ${currentIdx + 1} of ${filteredIndices.length} (Global #${q.id})`;
+      
+      const badge = document.getElementById('qLevelBadge');
+      badge.textContent = q.level;
+      if (q.level === 'Basic') badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-blue-100 text-blue-800';
+      else if (q.level === 'Intermediate') badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 text-amber-800';
+      else badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 text-red-800';
+
+      document.getElementById('qTopicBadge').textContent = q.topic;
+
+      // Status indicator
+      const statusEl = document.getElementById('qAttemptStatus');
+      const record = userAnswers[qRealIndex];
+      if (record) {
+        if (record.isCorrect) {
+          statusEl.textContent = "✓ Answered Correctly";
+          statusEl.className = "text-xs font-bold text-green-600 mt-0.5";
+        } else {
+          statusEl.textContent = "✗ Answered Incorrectly";
+          statusEl.className = "text-xs font-bold text-red-600 mt-0.5";
+        }
+      } else {
+        statusEl.textContent = "Unanswered";
+        statusEl.className = "text-xs font-medium text-slate-400 mt-0.5";
+      }
+
+      // Instruction & Prompt
+      document.getElementById('qInstruction').textContent = q.instruction;
+      document.getElementById('qCodeBlock').textContent = q.query;
+      document.getElementById('qPrompt').textContent = q.prompt;
+
+      // Render Dynamic Table
+      let tableHtml = `<table class="sql-table w-full text-left border-collapse text-xs sm:text-sm font-sans my-1">`;
+      tableHtml += `<thead><tr>`;
+      q.tableHeaders.forEach(h => {
+        tableHtml += `<th class="p-2 sm:p-2.5 font-bold">${h}</th>`;
+      });
+      tableHtml += `</tr></thead><tbody>`;
+      q.tableRows.forEach(row => {
+        tableHtml += `<tr>`;
+        row.forEach(cell => {
+          tableHtml += `<td class="p-2 sm:p-2.5 text-slate-800 font-medium">${cell}</td>`;
+        });
+        tableHtml += `</tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      document.getElementById('tableContainer').innerHTML = tableHtml;
+
+      // Render 4 Options
+      let optionsHtml = "";
+      q.options.forEach(opt => {
+        let btnStyle = "bg-white border-2 border-slate-200 text-slate-800 hover:border-brand-navy hover:bg-slate-50";
+        let badgeStyle = "bg-slate-100 text-slate-700 font-extrabold";
+
+        if (record && record.selectedKey === opt.key) {
+          if (opt.key === q.correct) {
+            btnStyle = "bg-green-50 border-2 border-green-600 text-green-900";
+            badgeStyle = "bg-green-600 text-white font-extrabold";
+          } else {
+            btnStyle = "bg-red-50 border-2 border-red-500 text-red-900";
+            badgeStyle = "bg-red-500 text-white font-extrabold";
+          }
+        }
+
+        optionsHtml += `
+          <button onclick="selectOption('${qRealIndex}', '${opt.key}')" 
+            class="option-btn w-full text-left p-3.5 sm:p-4 rounded-xl flex items-center gap-3 ${btnStyle}">
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm ${badgeStyle}">
+              ${opt.key}
+            </span>
+            <span class="font-bold text-sm sm:text-base flex-1">${opt.text}</span>
+          </button>
+        `;
+      });
+      document.getElementById('optionsContainer').innerHTML = optionsHtml;
+
+      // Navigation Buttons disable state
+      document.getElementById('prevBtn').disabled = currentIdx === 0;
+      document.getElementById('nextBtn').disabled = currentIdx === filteredIndices.length - 1;
+
+      // Update sidebar active highlights
+      updateGridHighlights();
+    }
+
+    // Select Option Handler
+    function selectOption(qRealIndex, selectedKey) {
+      qRealIndex = parseInt(qRealIndex);
+      const q = questions[qRealIndex];
+      const isCorrect = (selectedKey === q.correct);
+
+      // Record Answer
+      userAnswers[qRealIndex] = { selectedKey, isCorrect };
+
+      // Update Screen
+      renderQuiz();
+      renderGrid();
+      updateStats();
+
+      // Show Interactive Pop-up Modal
+      showModal(q, selectedKey, isCorrect);
+    }
+
+    // Modal Display Logic
+    function showModal(q, selectedKey, isCorrect) {
+      const modal = document.getElementById('resultModal');
+      const iconContainer = document.getElementById('modalIconContainer');
+      const modalTitle = document.getElementById('modalTitle');
+      const badge = document.getElementById('modalAnswerBadge');
+      const correctText = document.getElementById('modalCorrectText');
+      const explanation = document.getElementById('modalExplanation');
+
+      const correctOptObj = q.options.find(o => o.key === q.correct);
+
+      if (isCorrect) {
+        iconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-black bg-green-100 text-green-600";
+        iconContainer.innerHTML = `<i class="fa-solid fa-check"></i>`;
+        modalTitle.textContent = "Correct Answer!";
+        modalTitle.className = "text-2xl font-extrabold text-green-600";
+        badge.textContent = "Great Job!";
+        badge.className = "text-xs font-bold uppercase tracking-wider mt-1 px-3 py-1 rounded-full inline-block bg-green-100 text-green-800";
+      } else {
+        iconContainer.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-black bg-red-100 text-red-600";
+        iconContainer.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+        modalTitle.textContent = "Incorrect Choice";
+        modalTitle.className = "text-2xl font-extrabold text-red-600";
+        badge.textContent = `You picked option (${selectedKey})`;
+        badge.className = "text-xs font-bold uppercase tracking-wider mt-1 px-3 py-1 rounded-full inline-block bg-red-100 text-red-800";
+      }
+
+      correctText.innerHTML = `<strong>Option ${q.correct}:</strong> ${correctOptObj.text}`;
+      explanation.innerHTML = q.explanation;
+
+      // Show Modal
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('resultModal');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    // Navigation Controls
+    function navigateQuestion(step) {
+      const newIdx = currentIdx + step;
+      if (newIdx >= 0 && newIdx < filteredIndices.length) {
+        currentIdx = newIdx;
+        renderQuiz();
+      }
+    }
+
+    function jumpToQuestion(realIndex) {
+      const foundIdx = filteredIndices.indexOf(realIndex);
+      if (foundIdx !== -1) {
+        currentIdx = foundIdx;
+        renderQuiz();
+      }
+    }
+
+    // Filter Logic
+    function filterQuestions() {
+      const topicVal = document.getElementById('topicFilter').value;
+      const levelVal = document.getElementById('levelFilter').value;
+
+      filteredIndices = [];
+      questions.forEach((q, idx) => {
+        let matchTopic = (topicVal === "ALL" || q.topic === topicVal);
+        let matchLevel = (levelVal === "ALL" || q.level === levelVal);
+        if (matchTopic && matchLevel) {
+          filteredIndices.push(idx);
+        }
+      });
+
+      currentIdx = 0;
+      renderQuiz();
+      renderGrid();
+    }
+
+    // Reset Quiz Data
+    function resetQuiz() {
+      if (confirm("Are you sure you want to reset all your progress and answers?")) {
+        userAnswers = new Array(questions.length).fill(null);
+        currentIdx = 0;
+        renderQuiz();
+        renderGrid();
+        updateStats();
+      }
+    }
+
+    // Render Side Palette Grid (1 to 40)
+    function renderGrid() {
+      const grid = document.getElementById('qGrid');
+      let gridHtml = "";
+
+      questions.forEach((q, idx) => {
+        const record = userAnswers[idx];
+        let stateClass = "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200";
+
+        if (record) {
+          if (record.isCorrect) stateClass = "bg-green-500 text-white font-bold border-green-600";
+          else stateClass = "bg-red-500 text-white font-bold border-red-600";
+        }
+
+        gridHtml += `
+          <button onclick="jumpToQuestion(${idx})" id="gridBtn_${idx}" 
+            class="q-grid-btn h-9 rounded-lg border text-xs font-bold flex items-center justify-center transition ${stateClass}">
+            ${idx + 1}
+          </button>
+        `;
+      });
+
+      grid.innerHTML = gridHtml;
+      updateGridHighlights();
+    }
+
+    function updateGridHighlights() {
+      if (filteredIndices.length === 0) return;
+      const currentRealIdx = filteredIndices[currentIdx];
+
+      questions.forEach((_, idx) => {
+        const btn = document.getElementById(`gridBtn_${idx}`);
+        if (!btn) return;
+
+        if (idx === currentRealIdx) {
+          btn.classList.add('ring-2', 'ring-brand', 'ring-offset-1', 'scale-105');
+        } else {
+          btn.classList.remove('ring-2', 'ring-brand', 'ring-offset-1', 'scale-105');
+        }
+      });
+    }
+
+    // Stats Calculation
+    function updateStats() {
+      const total = questions.length;
+      let answeredCount = 0;
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      userAnswers.forEach(rec => {
+        if (rec) {
+          answeredCount++;
+          if (rec.isCorrect) correctCount++;
+          else incorrectCount++;
+        }
+      });
+
+      const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+      const progressPercent = Math.round((answeredCount / total) * 100);
+
+      document.getElementById('headerScore').textContent = correctCount;
+      document.getElementById('headerAccuracy').textContent = `${accuracy}%`;
+
+      document.getElementById('statAnswered').textContent = `${answeredCount} / ${total}`;
+      document.getElementById('statCorrect').textContent = correctCount;
+      document.getElementById('statIncorrect').textContent = incorrectCount;
+
+      document.getElementById('progressBar').style.width = `${progressPercent}%`;
+      document.getElementById('progressPercent').textContent = `${progressPercent}%`;
+    }
+
+    // Mobile Navigation Drawer Toggle
+    document.getElementById('toggleGridMobile').addEventListener('click', () => {
+      const sidebarNav = document.getElementById('sidebarNav');
+      sidebarNav.classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>
